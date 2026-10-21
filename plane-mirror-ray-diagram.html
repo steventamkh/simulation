@@ -7,175 +7,180 @@
 <style>
   :root{
     --bg:#eef2f6; --card:#ffffff; --ink:#1f2933; --muted:#5f6b7a; --line:#d9dee5;
-    --accent:#1971c2; --accent-soft:#e7f1fb; --o1:#f08c00; --o2:#9c36b5; --blue:#1c7ed6;
-    --ok:#2b8a3e; --bad:#c92a2a; --paper:#fffdf2;
+    --accent:#1971c2; --accent-soft:#e7f1fb; --ok:#2b8a3e; --bad:#c92a2a;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:15px;line-height:1.45}
-  header.top{padding:18px 20px 6px;max-width:1320px;margin:0 auto}
-  header.top h1{margin:0;font-size:22px;color:#c2410c;letter-spacing:.2px}
-  header.top p{margin:4px 0 0;color:var(--muted)}
-  .wrap{max-width:1320px;margin:0 auto;padding:12px 16px 28px;display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;align-items:start}
-  @media (max-width:980px){.wrap{grid-template-columns:1fr}}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-  .side{display:flex;flex-direction:column;gap:14px}
-  .card h3{margin:0 0 8px;font-size:15px;color:var(--accent)}
-  .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
-  .toolbar label{font-weight:600;font-size:14px;display:flex;gap:6px;align-items:center}
-  select{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;max-width:100%}
-  button{font:inherit;cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 11px;color:var(--ink)}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:15px;line-height:1.4}
+  button{font:inherit;cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 12px;color:var(--ink)}
   button:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
-  button:disabled{opacity:.4;cursor:not-allowed}
+  button:disabled{opacity:.35;cursor:not-allowed}
   button.on{background:var(--accent);border-color:var(--accent);color:#fff}
-  .seg{display:inline-flex}
-  .seg button{border-radius:0}
-  .seg button:first-child{border-radius:8px 0 0 8px}
-  .seg button:last-child{border-radius:0 8px 8px 0;margin-left:-1px}
-  .prompt{background:#fff8e1;border-left:4px solid #f59f00;padding:8px 12px;border-radius:6px;margin-bottom:10px;font-size:14.5px}
-  .prompt:empty{display:none}
-  svg#board{width:100%;height:auto;display:block;border:1px solid #cfc8b0;border-radius:6px;touch-action:none;user-select:none;-webkit-user-select:none}
+  button.on:hover{color:#fff}
+  button.primary{background:var(--ok);border-color:var(--ok);color:#fff;font-weight:700;font-size:16px;padding:10px 12px}
+  button.primary:hover:not(:disabled){color:#fff;filter:brightness(1.08)}
+  button.link{border:0;background:none;color:var(--accent);padding:4px 6px;font-size:14px}
+  button.link:hover{text-decoration:underline}
+
+  .topbar{max-width:1240px;margin:0 auto;padding:14px 16px 4px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .topbar h1{margin:0;font-size:21px;color:#c2410c}
+  .mode{display:inline-flex;background:#dde3ea;border-radius:11px;padding:3px}
+  .mode button{border:0;background:transparent;padding:8px 22px;border-radius:9px;font-weight:700;color:var(--muted)}
+  .mode button.on{background:#fff;color:var(--accent);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+
+  .wrap{max-width:1240px;margin:0 auto;padding:8px 16px 24px;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;align-items:start}
+  @media (max-width:900px){.wrap{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .side{display:flex;flex-direction:column;gap:12px}
+  .side > div{display:flex;flex-direction:column;gap:12px}
+  .lbl{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px}
+
+  .task{display:flex;align-items:center;gap:10px;background:#fff8e1;border:1px solid #ffe08a;border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:16.5px;font-weight:600;min-height:48px}
+  .badge{flex:none;min-width:32px;height:32px;padding:0 9px;border-radius:16px;background:#f59f00;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px}
+  svg#board{width:100%;height:auto;display:block;border:1px solid #cfc8b0;border-radius:8px;touch-action:none;user-select:none;-webkit-user-select:none}
   .handle{fill:rgba(25,113,194,0);cursor:grab}
   .handle:hover{fill:rgba(25,113,194,.16)}
-  .warn{color:var(--bad);font-weight:600;margin-top:8px;font-size:14px}
+  .warn{color:var(--bad);font-weight:600;margin-top:8px}
   .warn:empty{display:none}
-  .legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:10px;font-size:13.5px;color:var(--muted);align-items:center}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:8px;font-size:13px;color:var(--muted);align-items:center}
   .legend span{display:inline-flex;align-items:center;gap:6px}
-  .tabs{display:flex;gap:0;margin-bottom:12px}
-  .tabs button{flex:1;border-radius:0}
-  .tabs button:first-child{border-radius:8px 0 0 8px}
-  .tabs button:last-child{border-radius:0 8px 8px 0;margin-left:-1px}
-  .steps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
-  .steps button{min-width:44px;font-weight:700}
-  .steptext{background:var(--accent-soft);border-radius:8px;padding:10px 12px;min-height:96px}
-  .steptext b.h{display:block;color:var(--accent);margin-bottom:4px;font-size:15.5px}
-  .nav{display:flex;gap:8px;margin-top:10px}
+
+  .exgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .exgrid button{padding:8px 4px;font-size:14px}
+  .steps{display:flex;gap:6px}
+  .steps button{flex:1;padding:6px 0;font-weight:700}
+  .steps button.done{color:var(--ok);border-color:#b2f2bb}
+  .steptext{font-size:15.5px;margin:12px 0;min-height:44px}
+  .tip{font-size:13.5px;color:var(--muted);margin-top:4px}
+  .nav{display:flex;gap:8px;margin-top:8px}
   .nav button{flex:1}
-  .res-row{display:flex;gap:8px;align-items:flex-start;padding:7px 0;border-bottom:1px dashed var(--line)}
+  .center{text-align:center}
+
+  .res-row{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px dashed var(--line)}
   .res-row:last-child{border-bottom:0}
   .chip{width:12px;height:12px;border-radius:3px;margin-top:4px;flex:none}
   .yes{color:var(--ok);font-weight:700}
   .no{color:var(--bad);font-weight:700}
   .muted{color:var(--muted)}
-  .opt{display:flex;gap:8px;align-items:center;margin:5px 0;font-size:14.5px}
+
+  details.card > summary{cursor:pointer;font-weight:600;color:var(--muted);list-style:none}
+  details.card > summary::-webkit-details-marker{display:none}
+  details.card > summary::before{content:"▸ ";}
+  details.card[open] > summary::before{content:"▾ ";}
+  details.card[open] > summary{margin-bottom:10px}
+  .opt{display:flex;gap:8px;align-items:center;margin:6px 0;font-size:14px}
   .opt input{width:17px;height:17px}
+  .seg{display:inline-flex}
+  .seg button{border-radius:0;font-size:14px}
+  .seg button:first-child{border-radius:8px 0 0 8px}
+  .seg button:last-child{border-radius:0 8px 8px 0;margin-left:-1px}
+  select{font:inherit;padding:4px 6px;border:1px solid var(--line);border-radius:7px;background:#fff}
   ol.conv{margin:0;padding-left:20px;font-size:14px}
   ol.conv li{margin:3px 0}
-  .q{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0}
-  .q .lab{flex:1 1 150px}
-  #challengeBox:empty{display:none}
-  .tasklist{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
-  .tchip{min-width:30px;height:30px;border-radius:15px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;border:2px solid var(--line);color:var(--muted);font-size:14px;padding:0 6px}
+
+  .tasklist{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .tchip{min-width:32px;height:32px;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;border:2px solid var(--line);color:#adb5bd;font-size:15px}
   .tchip.cur{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
   .tchip.first{background:#d3f9d8;border-color:#2b8a3e;color:#2b8a3e}
   .tchip.retry{background:#fff3bf;border-color:#e67700;color:#e67700}
   .tchip.shown{background:#ffe3e3;border-color:#c92a2a;color:#c92a2a}
-  .tchip.skip{background:#f1f3f5;color:#adb5bd}
-  .tools{display:flex;gap:6px;margin:10px 0 4px}
-  .tools button{flex:1;font-size:14px}
-  .small{font-size:13px;color:var(--muted)}
-  .row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-  .row button{flex:1 1 auto}
-  .fb{margin-top:10px;padding:9px 11px;border-radius:8px;font-size:14.5px}
-  .fb.bad{background:#fff0f0;border-left:4px solid var(--bad)}
-  .fb.good{background:#ebfbee;border-left:4px solid var(--ok)}
-  .fb.info{background:#f1f3f5;border-left:4px solid #868e96}
-  button.primary{background:var(--ok);border-color:var(--ok);color:#fff;font-weight:700}
-  button.primary:hover{color:#fff;filter:brightness(1.08)}
-  .check{font-weight:600}
-  .score{font-weight:700;margin-top:6px}
+  .tchip.skip{background:#f1f3f5;color:#ced4da}
+  .tools{display:flex;gap:8px}
+  .tools button{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 6px;font-weight:600}
+  .tools button.on svg line,.tools button.on svg polygon{stroke:#fff;fill:#fff}
+  .answers{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .answers button{padding:11px;font-weight:700;font-size:15.5px}
+  .mini{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;justify-content:center}
+  .mini button{border:0;background:#f1f3f5;font-size:13.5px;padding:6px 10px}
+  .fb{margin-top:12px;padding:9px 11px;border-radius:8px;font-size:15px;font-weight:600}
+  .fb.bad{background:#fff0f0;color:#a61e1e}
+  .fb.good{background:#ebfbee;color:#1f6f31}
+  .fb.info{background:#f1f3f5;color:#495057;font-weight:500}
+  .foot{display:flex;justify-content:space-between}
+  .big{font-size:34px;font-weight:800;text-align:center;color:var(--ok);margin-top:4px}
   sub{font-size:.7em}
-  .kbd{font-size:12px;color:var(--muted);margin-top:8px}
 </style>
 </head>
 <body>
-<header class="top">
-  <h1>Seeing an Image in a Plane Mirror</h1>
-  <p>Ray diagram skill: show whether an observer can see the image. Drag the object, the ends of the mirror and the observer(s).</p>
+<header class="topbar">
+  <h1>Plane Mirror: Can the Observer See the Image?</h1>
+  <div class="mode">
+    <button id="tabExplore" class="on">Explore</button>
+    <button id="tabChallenge">Challenge</button>
+  </div>
 </header>
 
 <main class="wrap">
   <section class="card">
-    <div class="toolbar">
-      <label>Example
-        <select id="preset">
-          <option value="whole">Skill: see the whole image</option>
-          <option value="part">Note 5: cannot see I₂</option>
-          <option value="ex5">Example 5: who can see the image?</option>
-          <option value="qc4">Quick check 4 Q2: Leon &amp; Patrick</option>
-          <option value="lbp1">Learn by Practice 3 Q1: slanted mirror</option>
-          <option value="full">Full-length mirror (side view)</option>
-        </select>
-      </label>
-      <div class="seg" id="typeSeg">
-        <button data-type="arrow">Arrow object</button>
-        <button data-type="point">Point object</button>
-      </div>
-      <div style="display:flex;gap:6px">
-        <button id="addObs">+ Observer</button>
-        <button id="remObs">− Observer</button>
-      </div>
-    </div>
-    <div id="prompt" class="prompt"></div>
+    <div class="task"><span class="badge" id="taskBadge"></span><span id="prompt"></span></div>
     <svg id="board" xmlns="http://www.w3.org/2000/svg"></svg>
     <div id="warn" class="warn"></div>
     <div class="legend">
-      <span><svg width="46" height="12"><line x1="2" y1="6" x2="44" y2="6" stroke="#f08c00" stroke-width="2.2"/><polygon points="28,6 19,2 19,10" fill="#f08c00"/></svg>real ray (solid, arrow)</span>
-      <span><svg width="46" height="12"><line x1="2" y1="6" x2="44" y2="6" stroke="#f08c00" stroke-width="2" stroke-dasharray="5 4"/></svg>virtual ray (dotted, no arrow)</span>
-      <span><svg width="46" height="12"><line x1="2" y1="6" x2="38" y2="6" stroke="#222" stroke-width="2" stroke-dasharray="5 4"/><polygon points="44,6 35,2 35,10" fill="#222"/></svg>virtual image</span>
-      <span><svg width="46" height="12"><line x1="2" y1="6" x2="44" y2="6" stroke="#1c7ed6" stroke-width="2" stroke-dasharray="5 4"/></svg>misses the mirror</span>
+      <span><svg width="40" height="12"><line x1="2" y1="6" x2="38" y2="6" stroke="#f08c00" stroke-width="2.2"/><polygon points="25,6 16,2 16,10" fill="#f08c00"/></svg>real ray</span>
+      <span><svg width="40" height="12"><line x1="2" y1="6" x2="38" y2="6" stroke="#f08c00" stroke-width="2" stroke-dasharray="5 4"/></svg>virtual ray</span>
+      <span><svg width="40" height="12"><line x1="2" y1="6" x2="32" y2="6" stroke="#222" stroke-width="2" stroke-dasharray="5 4"/><polygon points="38,6 29,2 29,10" fill="#222"/></svg>image</span>
+      <span><svg width="40" height="12"><line x1="2" y1="6" x2="38" y2="6" stroke="#1c7ed6" stroke-width="2" stroke-dasharray="5 4"/></svg>misses mirror</span>
     </div>
   </section>
 
   <aside class="side">
-    <div class="card">
-      <div class="tabs">
-        <button id="tabExplore" class="on">Explore</button>
-        <button id="tabChallenge">Challenge</button>
+    <div id="explorePanel">
+      <div class="card">
+        <div class="lbl">Example</div>
+        <div class="exgrid" id="exRow"></div>
       </div>
-      <div id="exploreNav">
+
+      <div class="card">
+        <div class="lbl">Steps</div>
         <div id="stepBtns" class="steps"></div>
         <div id="stepText" class="steptext"></div>
         <div class="nav">
           <button id="prev">◀ Back</button>
-          <button id="next">Next ▶</button>
-          <button id="all">Show all</button>
+          <button id="next" class="primary">Next ▶</button>
         </div>
-        <div class="kbd">Tip: use ← / → keys to step through.</div>
+        <div class="center"><button id="all" class="link">Show all steps</button></div>
       </div>
-      <div id="challengeBox"></div>
+
+      <div class="card" id="resultCard">
+        <div class="lbl">Result</div>
+        <div id="results"></div>
+      </div>
+
+      <details class="card">
+        <summary>More settings</summary>
+        <div class="opt"><div class="seg" id="typeSeg">
+          <button data-type="arrow">Arrow object</button>
+          <button data-type="point">Point object</button>
+        </div></div>
+        <div class="opt">Observers:
+          <button id="remObs">−</button><button id="addObs">+</button>
+        </div>
+        <label class="opt"><input type="checkbox" id="optCons" checked> Construction lines</label>
+        <label class="opt"><input type="checkbox" id="optVis" checked> Highlight the part of image seen</label>
+        <label class="opt"><input type="checkbox" id="optRegion"> Shade the viewing region</label>
+        <label class="opt"><input type="checkbox" id="optNormals"> Normals and angles</label>
+        <label class="opt">Snap to grid
+          <select id="snap">
+            <option value="1">1 square</option>
+            <option value="0.5" selected>½ square</option>
+            <option value="0.25">¼ square</option>
+            <option value="0">off</option>
+          </select>
+        </label>
+      </details>
+
+      <details class="card">
+        <summary>Drawing rules</summary>
+        <ol class="conv">
+          <li>Solid lines: objects and real rays.</li>
+          <li>Dotted lines: images and virtual rays.</li>
+          <li>Real rays have arrows; virtual rays do not.</li>
+          <li>One ray from each point to the observer.</li>
+          <li>Line misses the mirror → that point cannot be seen.</li>
+        </ol>
+      </details>
     </div>
 
-    <div class="card">
-      <h3>Result</h3>
-      <div id="results"></div>
-    </div>
-
-    <div class="card">
-      <h3>Display options</h3>
-      <label class="opt"><input type="checkbox" id="optCons" checked> Construction lines for the image (⊥, equal distance)</label>
-      <label class="opt"><input type="checkbox" id="optVis" checked> Highlight the part of the image each observer sees</label>
-      <label class="opt"><input type="checkbox" id="optRegion"> Shade the region where each image point can be seen</label>
-      <label class="opt"><input type="checkbox" id="optNormals"> Show normals and angles (i = r)</label>
-      <label class="opt">Snap to grid
-        <select id="snap">
-          <option value="1">1 square</option>
-          <option value="0.5" selected>½ square</option>
-          <option value="0.25">¼ square</option>
-          <option value="0">off</option>
-        </select>
-      </label>
-    </div>
-
-    <div class="card">
-      <h3>Drawing conventions</h3>
-      <ol class="conv">
-        <li>Solid lines are for objects and real light rays.</li>
-        <li>Dotted lines are for virtual images and virtual rays.</li>
-        <li>Real rays have arrows; virtual rays do not.</li>
-        <li>One ray (not a cone of rays) is drawn from each point to the observer.</li>
-        <li>If the line from an image point to the observer does not pass through the mirror, no light from that object point can reach the observer, so that image point cannot be seen.</li>
-      </ol>
-    </div>
+    <div id="challengeBox"></div>
   </aside>
 </main>
 
@@ -221,24 +226,24 @@
   const st = {
     type:'arrow', O1:P(5,2), O2:P(3,2), M1:P(6,2), M2:P(6,4),
     obs:[{x:3,y:5,name:'observer'}], labels:{...ARROW_L},
-    step:0, mode:'explore', snap:0.5, prompt:'',
+    step:0, mode:'explore', snap:0.5, prompt:'', preset:'ex1',
     opt:{ cons:true, vis:true, region:false, normals:false },
     ch:null
   };
 
   const PRESETS = {
-    whole:{ type:'arrow', O1:[5,2], O2:[3,2], M1:[6,2], M2:[6,4], obs:[[3,5,'observer']],
-      prompt:'Follow steps ① to ④. Can the observer see both I₁ and I₂?' },
-    part:{ type:'arrow', O1:[5,2], O2:[3,2], M1:[6,2], M2:[6,4], obs:[[5,5,'observer']],
-      prompt:'The line from I₂ to the observer misses the mirror. Drag the observer (or an end of the mirror) so that the whole image can be seen.' },
-    ex5:{ type:'point', O1:[7,3], M1:[5,2], M2:[5,4], obs:[[7,2,'A'],[7,4,'B'],[7,5.5,'C']],
-      prompt:'Can students A, B and C see the image of O? Think about: in which direction should C move in order to see I? Drag C to check.' },
-    qc4:{ type:'point', O1:[7,5], M1:[3,4], M2:[6,4], obs:[[4,5,'Leon']], labels:{h:'P',hi:"P'"},
-      prompt:'Object P is Patrick; the observer is Leon. Can Leon see Patrick in the mirror? Then drag P onto Leon and Leon onto P’s old spot to test the other cases (e.g. can Patrick see himself?).' },
-    lbp1:{ type:'arrow', O1:[7,6], O2:[5,6], M1:[6.5,4.5], M2:[8.5,6.5], obs:[[5,5,'P']], labels:{h:'Y',t:'X',hi:"Y'",ti:"X'"},
-      prompt:'Object XY is placed in front of a slanted mirror. Can an observer at P see the images of X and Y? Draw light rays to explain.' },
-    full:{ type:'arrow', O1:[9,1.5], O2:[9,8], M1:[5,2.5], M2:[5,5.5], obs:[[9,2,'eye']], labels:{h:'H',t:'F',hi:"H'",ti:"F'"},
-      prompt:'Side view: H = top of head, F = feet, the eye is just below H. Drag the ends of the mirror to find the shortest mirror that lets the eye see the whole body. Compare its length with the body height (6.5 squares).' }
+    ex1:{ n:1, type:'arrow', O1:[5,2], O2:[3,2], M1:[6,2], M2:[6,4], obs:[[3,5,'observer']],
+      prompt:'Can the observer see the whole image?' },
+    ex2:{ n:2, type:'arrow', O1:[5,2], O2:[3,2], M1:[6,2], M2:[6,4], obs:[[5,5,'observer']],
+      prompt:'Why can’t the observer see I₂? Drag the observer to fix it.' },
+    ex3:{ n:3, type:'point', O1:[7,3], M1:[5,2], M2:[5,4], obs:[[7,2,'A'],[7,4,'B'],[7,5.5,'C']],
+      prompt:'Can A, B and C see the image? Drag C until it can.' },
+    ex4:{ n:4, type:'point', O1:[7,5], M1:[3,4], M2:[6,4], obs:[[4,5,'Leon']], labels:{h:'P',hi:"P'"},
+      prompt:'Can Leon see Patrick (P) in the mirror?' },
+    ex5:{ n:5, type:'arrow', O1:[7,6], O2:[5,6], M1:[6.5,4.5], M2:[8.5,6.5], obs:[[5,5,'P']], labels:{h:'Y',t:'X',hi:"Y'",ti:"X'"},
+      prompt:'Can P see the images of X and Y?' },
+    ex6:{ n:6, type:'arrow', O1:[9,1.5], O2:[9,8], M1:[5,2.5], M2:[5,5.5], obs:[[9,2,'eye']], labels:{h:'H',t:'F',hi:"H'",ti:"F'"},
+      prompt:'Shortest mirror to see your whole body? Drag the mirror ends.' }
   };
 
   function loadPreset(key){
@@ -249,7 +254,7 @@
     st.M1 = P(...p.M1); st.M2 = P(...p.M2);
     st.obs = p.obs.map(o=>({x:o[0],y:o[1],name:o[2]}));
     st.labels = {...(p.type==='arrow'?ARROW_L:POINT_L), ...(p.labels||{})};
-    st.prompt = p.prompt;
+    st.prompt = p.prompt; st.preset = key;
     st.step = 0;
     render();
   }
@@ -497,6 +502,7 @@
     drawObject(out,top);
     drawObservers(out,top);
 
+    [st.O1].concat(st.type==='arrow'?[st.O2]:[]).concat(st.obs).forEach(p=>out.push(circle(p,13,{stroke:'#74c0fc',w:1.5,op:.9})));
     const hs=[];
     const addH=(key,p)=>hs.push(`<circle class="handle" data-key="${key}" cx="${fx(p.x)}" cy="${fx(p.y)}" r="${(0.34*U).toFixed(0)}"/>`);
     addH('M1',M1); addH('M2',M2); addH('O1',st.O1);
@@ -509,33 +515,26 @@
   }
 
   function stepTexts(){
-    const L=st.labels;
-    if(st.type==='point'){
-      const h=htmlLab(L.h), hi=htmlLab(L.hi);
-      return [
-        ['Set up','Drag the object, the ends of the mirror and the observer(s) to set up the problem. Then press <b>Next</b>.'],
-        ['① Locate the image',`Locate the image ${hi} of ${h} using the properties of the image: ${hi} is as far behind the mirror as ${h} is in front, and the line joining them is perpendicular to the mirror (extended if necessary).`],
-        ['② Join the image to the observer',`Draw a line from ${hi} to the observer. Behind the mirror it is a <b>virtual ray</b> (dotted, no arrow). In front of the mirror it is a <b>real ray</b> (solid, arrow pointing to the observer). If the line does not pass through the mirror, the observer <b>cannot</b> see ${hi}.`],
-        ['③ Complete the light path',`Draw a real ray from ${h} to the point where the line from ${hi} meets the mirror. Light from ${h} is reflected there into the observer's eye, so the observer can see ${hi}.`]
-      ];
-    }
-    const h=htmlLab(L.h), t=htmlLab(L.t), hi=htmlLab(L.hi), ti=htmlLab(L.ti);
-    return [
-      ['Set up','Drag the object, the ends of the mirror and the observer(s) to set up the problem. Then press <b>Next</b>.'],
-      ['① Locate the image',`Locate the image ${hi}${ti} of the object ${h}${t} using the properties of the image: each image point is as far behind the mirror as the object point is in front, and the line joining them is perpendicular to the mirror. Draw the virtual image with a dotted line.`],
-      ['② Ray from '+hi,`Draw a line from ${hi} to the observer. Behind the mirror it is a <b>virtual ray</b> (dotted, no arrow); in front of the mirror it is a <b>real ray</b> (solid, with an arrow). If the line does not pass through the mirror, the observer <b>cannot</b> see ${hi}.`],
-      ['③ Ray from '+h,`Draw a real ray from ${h} to the point where the line from ${hi} meets the mirror. This shows that the observer can see ${hi}.`],
-      ['④ Repeat for '+ti,`Repeat steps ② and ③ for ${ti} (using ${t}). If both rays reach the observer, the observer can see the whole image ${hi}${ti}.`]
+    const L=st.labels, A=st.type==='arrow';
+    const h=htmlLab(L.h), hi=htmlLab(L.hi);
+    const img = A ? hi+htmlLab(L.ti) : hi;
+    const s=[
+      ['Start', 'Drag the dots to change the set-up. Then press <b>Next</b>.'],
+      ['①', `Locate the image ${img}:<div class="tip">same distance behind the mirror, on a line ⊥ to it</div>`],
+      ['②', `Join ${hi} to the eye:<div class="tip">dotted behind the mirror, solid in front.<br>Misses the mirror → cannot see ${hi}</div>`],
+      ['③', `Draw a solid ray from ${h} to that point on the mirror.`]
     ];
+    if(A) s.push(['④', `Repeat ② and ③ for ${htmlLab(L.ti)}.`]);
+    return s;
   }
 
   function setModeUI(){
     const ch = st.mode==='challenge';
-    $('exploreNav').style.display = ch ? 'none' : '';
-    document.querySelectorAll('#typeSeg button').forEach(b=>{ b.classList.toggle('on',b.dataset.type===st.type); b.disabled=ch; });
-    $('preset').disabled = ch;
-    $('addObs').disabled = ch || st.obs.length>=3;
-    $('remObs').disabled = ch || st.obs.length<=1;
+    $('explorePanel').style.display = ch ? 'none' : '';
+    $('challengeBox').style.display = ch ? '' : 'none';
+    document.querySelectorAll('#typeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.type===st.type));
+    $('addObs').disabled = st.obs.length>=3;
+    $('remObs').disabled = st.obs.length<=1;
     $('tabExplore').classList.toggle('on',!ch);
     $('tabChallenge').classList.toggle('on',ch);
     svg.style.cursor = ch ? 'crosshair' : '';
@@ -544,27 +543,29 @@
   function updatePanel(v, ips, hits){
     const texts = stepTexts(), mx = maxStep();
     if(st.step>mx) st.step=mx;
-    $('stepBtns').innerHTML = texts.map((tx,i)=>`<button data-step="${i}" class="${i===st.step?'on':''}">${i===0?'Start':['','①','②','③','④'][i]}</button>`).join('');
-    const [hd,body] = texts[st.step];
-    $('stepText').innerHTML = `<b class="h">${hd}</b>${body}`;
+    $('stepBtns').innerHTML = texts.map((tx,i)=>`<button data-step="${i}" class="${i===st.step?'on':i<st.step?'done':''}">${tx[0]}</button>`).join('');
+    $('stepText').innerHTML = texts[st.step][1];
     $('prev').disabled = st.step===0;
     $('next').disabled = st.step===mx;
-    $('all').disabled = st.step===mx;
-    $('prompt').innerHTML = esc(st.prompt);
-    $('challengeBox').innerHTML = '';
+    $('all').style.visibility = st.step===mx ? 'hidden' : 'visible';
+    const pr = PRESETS[st.preset];
+    $('taskBadge').textContent = pr ? 'Example '+pr.n : 'Explore';
+    $('prompt').innerHTML = st.prompt ? esc(st.prompt) : 'Drag the dots, then press Next.';
+    $('exRow').querySelectorAll('button').forEach(b=>b.classList.toggle('on', b.dataset.ex===st.preset));
 
-    const res = $('results');
-    if(!v.ok){ res.innerHTML = '<span class="muted">Fix the set-up first.</span>'; return; }
-    if(st.step!==mx){ res.innerHTML = '<span class="muted">Go through the steps (or press <b>Show all</b>) to see who can see the image.</span>'; return; }
-    res.innerHTML = st.obs.map((E,j)=>{
+    const rc=$('resultCard');
+    if(!v.ok || st.step!==mx){ rc.style.display='none'; return; }
+    rc.style.display='';
+    $('results').innerHTML = st.obs.map((E,j)=>{
       const parts = ips.map((ip,k)=>`${htmlLab(ip.il)} <span class="${hits[k][j]?'yes':'no'}">${hits[k][j]?'✓':'✗'}</span>`).join(' &nbsp; ');
       let verdict;
       if(st.type==='arrow'){
         const f = visibleRuns(E,ips).frac;
-        verdict = f>0.995 ? 'can see the <b>whole</b> image' : f>0 ? 'can see only <b>part</b> of the image' : '<b>cannot</b> see the image';
-      } else verdict = hits[0][j] ? '<b>can</b> see the image' : '<b>cannot</b> see the image';
-      const nm = E.name==='observer' ? 'The observer' : E.name==='eye' ? 'The eye' : htmlLab(E.name);
-      return `<div class="res-row"><span class="chip" style="background:${st.obs.length>1||st.type==='arrow'?OBS_COL[j]:'#212529'}"></span><div>${nm} ${verdict}.<br><span class="muted">${parts}</span></div></div>`;
+        verdict = f>0.995 ? '<span class="yes">whole image</span>' : f>0 ? '<span style="color:#e67700;font-weight:700">part of the image</span>' : '<span class="no">nothing</span>';
+      } else verdict = hits[0][j] ? '<span class="yes">the image</span>' : '<span class="no">nothing</span>';
+      const nm = E.name==='observer' ? 'Observer' : E.name==='eye' ? 'Eye' : htmlLab(E.name);
+      const chip = st.obs.length>1||st.type==='arrow' ? `<span class="chip" style="background:${OBS_COL[j]}"></span>` : '';
+      return `<div class="res-row">${chip}<div>${nm} sees ${verdict}<div class="muted">${parts}</div></div></div>`;
     }).join('');
   }
 
@@ -645,23 +646,11 @@
 
   function taskInfo(t){
     const ips=imagePoints();
-    if(t.kind==='final') return {
-      title:'Conclusion',
-      body:'Look at your finished ray diagram. What can the observer see?',
-      short:'Decide what the observer can see.' };
+    if(t.kind==='final') return {sym:'✓', text:'What can the observer see?'};
     const ip=ips[t.k], I=htmlLab(ip.il), O=htmlLab(ip.ol);
-    if(t.kind==='img') return {
-      title:`① Locate the image ${I}`,
-      body:`Click on the grid where the image ${I} of ${O} is formed. The image is <b>as far behind</b> the mirror as ${O} is in front, on a line <b>perpendicular</b> to the mirror (extended if necessary).`,
-      short:`Click where the image ${I} of ${O} is.` };
-    if(t.kind==='iray') return {
-      title:(t.k===0?'② ':'④ ')+`Join ${I} to the observer`,
-      body:`Draw the line from ${I} straight towards the observer's eye.<br>• Behind the mirror: <b>dotted line</b> (virtual ray, no arrow).<br>• In front of the mirror: <b>solid ray</b> (real ray, with arrow).<br>If the line misses the mirror, just draw a dotted line from ${I} to the observer. Then press the button for your conclusion.`,
-      short:`Draw the line from ${I} to the observer, then decide whether the observer can see ${I}.` };
-    return {
-      title:(t.k===0?'③ ':'④ ')+`Ray from ${O}`,
-      body:`Draw a <b>real ray</b> from ${O} to the point where your line from ${I} meets the mirror. This completes the path of light from ${O} to the observer.`,
-      short:`Draw the real ray from ${O} to the mirror.` };
+    if(t.kind==='img') return {sym:'①', text:`Click where the image ${I} of ${O} is.`};
+    if(t.kind==='iray') return {sym:SYM(t), text:`Draw a line from ${I} to the eye. Can the observer see ${I}?`};
+    return {sym:SYM(t), text:`Draw a solid ray from ${O} to the mirror.`};
   }
 
   // --- line helpers for checking ---
@@ -701,98 +690,77 @@
     ch.tries[ch.ti]++; ch.msgType='bad'; ch.msg=msg;
   }
 
-  // explain precisely why no line from point `id` to the mirror was found
-  function diagnose(lines,id,lab,what,type){
+  // short reason why no line from point `id` to the mirror was found
+  function diagnose(lines,id,lab,what){
     const {M1,M2}=st;
     const mine=lines.filter(L=>touches(L,id));
-    if(!mine.length){
-      if(lines.length) return `Your ${what} must start <b>exactly on ${lab}</b>. Start dragging right on the point ${lab} — a blue ring shows when it has snapped on.`;
-      return type==='v'
-        ? `Start with a <b>dotted</b> line from ${lab} straight towards the observer, stopping at the mirror.`
-        : `Draw a real ray from ${lab} to the mirror.`;
-    }
-    const L=mine[mine.length-1], other = L.a.id===id ? L.b : L.a;
-    const from = L.a.id===id ? L.a : L.b;
-    if(other.id && other.id!=='M') return `Your ${what} from ${lab} ends at another point. It should end <b>on the mirror</b>.`;
-    if(segX(from,other,M1,M2)) return `Your ${what} from ${lab} goes <b>past</b> the mirror. Stop it <b>on the mirror</b> — the end snaps onto the mirror when you let go close to it.`;
-    return `Your ${what} from ${lab} stops <b>before</b> it reaches the mirror. Drag it all the way <b>onto the mirror</b> — a blue ring appears when the end has snapped on.`;
+    if(!mine.length) return lines.length ? `Start the ${what} exactly on ${lab}.` : `Draw a ${what} from ${lab} to the mirror.`;
+    const L=mine[mine.length-1], other = L.a.id===id ? L.b : L.a, from = L.a.id===id ? L.a : L.b;
+    if(other.id && other.id!=='M') return `End the ${what} on the mirror.`;
+    if(segX(from,other,M1,M2)) return `Too long — stop the ${what} on the mirror.`;
+    return `Too short — extend the ${what} to the mirror.`;
   }
 
   function placeImage(p){
     const t=curTask(), ip=imagePoints()[t.k], {M1,M2}=st;
-    const I=htmlLab(ip.il), O=htmlLab(ip.ol);
-    if(near(p,ip.I,0.12)){
-      st.ch.imgOK[t.k]=true;
-      pass(`Correct! ${I} is the same distance behind the mirror as ${O} is in front, and the line joining them is perpendicular to the mirror.`);
-      return;
-    }
+    const O=htmlLab(ip.ol);
+    if(near(p,ip.I,0.12)){ st.ch.imgOK[t.k]=true; return pass(`Correct!`); }
     st.ch.wrongPt=p;
     const sp=side(p,M1,M2), so=side(ip.O,M1,M2);
-    if(Math.abs(sp)<1e-6 || Math.sign(sp)===Math.sign(so))
-      return fail(`The image of a plane mirror is formed <b>behind</b> the mirror (on the hatched side).`);
-    if(!near(foot(p,M1,M2),foot(ip.O,M1,M2),0.12))
-      return fail(`The line joining ${O} and its image must be <b>perpendicular</b> to the mirror (extend the mirror line if necessary).`);
-    return fail(`Right direction! But ${I} should be <b>as far behind</b> the mirror as ${O} is in front of it. Count the squares.`);
+    if(Math.abs(sp)<1e-6 || Math.sign(sp)===Math.sign(so)) return fail(`The image is <b>behind</b> the mirror.`);
+    if(!near(foot(p,M1,M2),foot(ip.O,M1,M2),0.12)) return fail(`It must be on a line <b>⊥</b> to the mirror through ${O}.`);
+    return fail(`Check the <b>distance</b>: same as ${O} in front.`);
   }
 
   function checkIray(claimCan){
     const ch=st.ch, t=curTask(), ip=imagePoints()[t.k], E=st.obs[0];
-    const h=segX(ip.I,E,st.M1,st.M2), I=htmlLab(ip.il), O=htmlLab(ip.ol), Iid='I'+t.k, lines=ch.lines;
+    const h=segX(ip.I,E,st.M1,st.M2), I=htmlLab(ip.il), Iid='I'+t.k, lines=ch.lines;
+    if(!lines.length) return fail(`Draw the line from ${I} first.`);
     if(h){
-      if(lines.some(L=>ends(L,Iid,'E')))
-        return fail(`Light is reflected at the mirror, so break your line where it crosses the mirror: <b>dotted</b> from ${I} to the mirror, then <b>solid</b> from the mirror to the observer.`);
-      if(lines.some(L=>L.type==='r'&&touches(L,Iid)))
-        return fail(`${I} is a virtual image: no light really travels behind the mirror. Use a <b>dotted</b> line (no arrow) there.`);
+      if(lines.some(L=>ends(L,Iid,'E'))) return fail(`Break the line at the mirror: dotted behind, solid in front.`);
+      if(lines.some(L=>L.type==='r'&&touches(L,Iid))) return fail(`Behind the mirror, use a <b>dotted</b> line.`);
       const V=lines.find(L=>ends(L,Iid,'M'));
-      if(!V) return fail(diagnose(lines,Iid,I,'dotted line','v'));
-      if(!near(mEnd(V),h.pt,0.3)) return fail(`Your dotted line is not heading straight for the observer’s eye. The line from ${I} must point exactly at the observer.`);
+      if(!V) return fail(diagnose(lines,Iid,I,'dotted line'));
+      if(!near(mEnd(V),h.pt,0.3)) return fail(`Aim the dotted line at the eye (follow the grey guide).`);
       const R=lines.find(L=>ends(L,'M','E'));
-      if(!R) return fail(`Now draw the part in front of the mirror, from the mirror to the observer.`);
-      if(R.type!=='r') return fail(`In front of the mirror, light really travels into the eye, so this part is a <b>real ray</b> (solid, with an arrow).`);
-      if(R.a.id==='E') return fail(`Check the arrow: light travels <b>from the mirror into the eye</b>. Draw the real ray starting at the mirror and ending at the observer.`);
-      if(!near(mEnd(R),h.pt,0.3)) return fail(`The real ray must start exactly where your dotted line meets the mirror, so that the two parts form one straight line.`);
-      if(lines.length>2) return fail(`You have extra lines. Use <b>Undo</b> to remove them — this step needs just two lines.`);
-      if(!claimCan) return fail(`Your line passes through the mirror, so light from ${O} <b>can</b> be reflected into the observer’s eye. Think again: can the observer see ${I}?`);
+      if(!R) return fail(`Now draw a solid ray from the mirror to the eye.`);
+      if(R.type!=='r') return fail(`In front of the mirror, use a <b>solid</b> ray.`);
+      if(R.a.id==='E') return fail(`Wrong arrow direction: mirror → eye.`);
+      if(!near(mEnd(R),h.pt,0.3)) return fail(`Start the solid ray where the dotted line meets the mirror.`);
+      if(lines.length>2) return fail(`Too many lines — press Undo.`);
+      if(!claimCan) return fail(`Your line passes through the mirror. Look again!`);
       st.ch.rayDone[t.k]={hit:true,P:h.pt};
-      return pass(`Correct! The line from ${I} passes through the mirror, so the observer <b>can</b> see ${I}.`);
+      return pass(`Correct! The observer can see ${I}.`);
     }
-    if(lines.some(L=>touches(L,'M')))
-      return fail(`Look carefully: does the straight line from ${I} to the observer really pass through the mirror? Draw the whole line from ${I} to the observer to check.`);
+    if(lines.some(L=>touches(L,'M'))) return fail(`Does the line from ${I} to the eye really hit the mirror? Draw it all the way to the eye.`);
     const V=lines.find(L=>ends(L,Iid,'E'));
-    if(!V){
-      if(lines.some(L=>touches(L,Iid))) return fail(`Your line from ${I} should go all the way to the observer.`);
-      return fail(`Draw a <b>dotted</b> line from ${I} to the observer to test whether it passes through the mirror.`);
-    }
-    if(V.type!=='v') return fail(`No real light travels along this line, so draw it as a <b>dotted</b> line (no arrow).`);
-    if(lines.length>1) return fail(`You have extra lines. Use <b>Undo</b> to remove them — this step needs just one line.`);
-    if(claimCan) return fail(`Your line from ${I} to the observer <b>misses</b> the mirror, so no light from ${O} can be reflected into the eye. Can the observer really see ${I}?`);
+    if(!V) return fail(lines.some(L=>touches(L,Iid)) ? `Draw the line all the way to the eye.` : `Start the line exactly on ${I}.`);
+    if(V.type!=='v') return fail(`No real light here — use a <b>dotted</b> line.`);
+    if(lines.length>1) return fail(`Too many lines — press Undo.`);
+    if(claimCan) return fail(`Your line misses the mirror. Look again!`);
     st.ch.rayDone[t.k]={hit:false};
-    return pass(`Correct! The line from ${I} to the observer does not pass through the mirror, so the observer <b>cannot</b> see ${I}.`);
+    return pass(`Correct! The line misses the mirror, so ${I} cannot be seen.`);
   }
 
   function checkOray(){
     const ch=st.ch, t=curTask(), ip=imagePoints()[t.k], Pt=ch.rayDone[t.k].P;
-    const I=htmlLab(ip.il), O=htmlLab(ip.ol), Oid='O'+t.k, lines=ch.lines;
+    const O=htmlLab(ip.ol), Oid='O'+t.k, lines=ch.lines;
+    if(!lines.length) return fail(`Draw the ray from ${O} first.`);
     const R=lines.find(L=>ends(L,Oid,'M'));
-    if(!R){
-      if(lines.some(L=>touches(L,Oid))) return fail(diagnose(lines,Oid,O,'ray','r'));
-      return fail(`Draw a real ray from ${O} to the mirror.`);
-    }
-    if(R.type!=='r') return fail(`Light really travels from ${O} to the mirror, so use a <b>solid real ray</b> with an arrow.`);
-    if(R.a.id==='M') return fail(`Check the arrow: light travels <b>from ${O} to the mirror</b>. Start the ray at ${O}.`);
-    if(!near(mEnd(R),Pt,0.3)) return fail(`The ray from ${O} must hit the mirror at the <b>same point</b> where the line from ${I} meets it. Only then is it reflected into the observer’s eye.`);
-    if(lines.length>1) return fail(`You have extra lines. Use <b>Undo</b> to remove them — this step needs just one ray.`);
+    if(!R) return fail(diagnose(lines,Oid,O,'ray'));
+    if(R.type!=='r') return fail(`Use a <b>solid</b> ray — this light is real.`);
+    if(R.a.id==='M') return fail(`Wrong arrow direction: ${O} → mirror.`);
+    if(!near(mEnd(R),Pt,0.3)) return fail(`Hit the mirror at the <b>same point</b> as the dotted line.`);
+    if(lines.length>1) return fail(`Too many lines — press Undo.`);
     ch.oDone[t.k]=true;
-    return pass(`Correct! Light from ${O} is reflected at the mirror into the observer’s eye, so the observer sees it as coming from ${I}.`);
+    return pass(`Correct!`);
   }
 
   function checkFinal(ans){
     const c=correctFinal();
     st.ch.finalAns=ans;
-    const txt={whole:'the whole image',part:'only part of the image',none:'none of the image'};
-    if(ans===c) return pass(`Correct! The observer can see ${txt[c]}.`);
-    const h0=!!truthHit(0), h1=!!truthHit(1), ips=imagePoints();
-    return fail(`Look at your diagram again: the observer ${h0?'can':'cannot'} see ${htmlLab(ips[0].il)} and ${h1?'can':'cannot'} see ${htmlLab(ips[1].il)}.`);
+    if(ans===c) return pass(`Correct!`);
+    return fail(`Not quite — check which rays reach the eye.`);
   }
 
   function showAnswer(){
@@ -802,7 +770,8 @@
     if(t.kind==='oray') ch.oDone[t.k]=true;
     if(t.kind==='final') ch.finalAns=correctFinal();
     ch.record[ch.ti]='shown';
-    pass('Here is the correct answer. Study it carefully, then go on.');
+    const txt={whole:'The whole image.',part:'Only part of the image.',none:'None of the image.'};
+    pass(t.kind==='final' ? 'Answer: '+txt[correctFinal()] : 'Here is the answer.');
     ch.msgType='info';
   }
 
@@ -813,7 +782,7 @@
       const t=curTask();
       if(t.kind==='oray' && ch.rayDone[t.k] && !ch.rayDone[t.k].hit){
         ch.record[ch.ti]='skip';
-        ch.note=`Since the observer cannot see ${htmlLab(ips[t.k].il)}, no ray from ${htmlLab(ips[t.k].ol)} reaches the observer, so step ${t.k===0?'③':'④'} for it is skipped.`;
+        ch.note=`${htmlLab(ips[t.k].il)} can’t be seen, so no ray from ${htmlLab(ips[t.k].ol)} is needed.`;
         ch.ti++; continue;
       }
       break;
@@ -900,88 +869,87 @@
 
     drawObject(out,top);
     drawObservers(out,top);
+    // pulsing marker: where to start the next line
+    if(t && !ch.ok && !ch.drawing){
+      let pt=null;
+      if(t.kind==='iray'){
+        const Iid='I'+t.k, V=ch.lines.find(L=>ends(L,Iid,'M'));
+        if(!ch.lines.some(L=>touches(L,Iid))) pt=ips[t.k].I;
+        else if(V && !ch.lines.some(L=>touches(L,'E'))) pt=mEnd(V);
+      } else if(t.kind==='oray' && !ch.lines.length) pt=ips[t.k].O;
+      if(pt) out.push(`<circle cx="${fx(pt.x)}" cy="${fx(pt.y)}" r="9" fill="none" stroke="#1c7ed6" stroke-width="3"><animate attributeName="r" values="8;17;8" dur="1.4s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0.15;1" dur="1.4s" repeatCount="indefinite"/></circle>`);
+    }
     finishSvg(out,top);
     $('warn').textContent='';
     updateChallengePanel();
   }
+
+  const PEN_V = `<svg width="34" height="10"><line x1="1" y1="5" x2="33" y2="5" stroke="#495057" stroke-width="2.4" stroke-dasharray="5 4"/></svg>`;
+  const PEN_R = `<svg width="34" height="10"><line x1="1" y1="5" x2="33" y2="5" stroke="#495057" stroke-width="2.4"/><polygon points="22,5 13,1 13,9" fill="#495057"/></svg>`;
 
   function updateChallengePanel(){
     const ch=st.ch, ips=imagePoints();
     const chips = ch.tasks.map((t,i)=>{
       const r=ch.record[i];
       const cls = r ? r : (i===ch.ti && !ch.done ? 'cur' : '');
-      return `<span class="tchip ${cls}" title="${t.kind}">${SYM(t)}</span>`;
+      return `<span class="tchip ${cls}">${i+1}</span>`;
     }).join('');
-    let html = `<div class="tasklist">${chips}</div>`;
+    let html = `<div class="card"><div class="tasklist">${chips}</div>`;
 
     if(ch.done){
       const n=ch.tasks.filter((_,i)=>ch.record[i]!=='skip').length;
       const first=ch.record.filter(r=>r==='first').length;
-      html += `<div class="steptext"><b class="h">Challenge complete! 🎉</b>You got <b>${first}</b> of <b>${n}</b> steps right first time.</div>`;
+      $('taskBadge').textContent='🎉';
+      $('prompt').innerHTML='Well done! Challenge complete.';
+      html += `<div class="big">${first} / ${n}</div><div class="center muted">correct first time</div>`;
       if(ch.note) html += `<div class="fb info">${ch.note}</div>`;
-      html += `<div class="row"><button data-act="new" class="primary">New challenge</button><button data-act="restart">Redo this one</button></div>`;
+      html += `<div class="nav" style="margin-top:14px"><button data-act="new" class="primary">New challenge ▶</button></div>`;
+      html += `<div class="center"><button data-act="restart" class="link">↻ Try this one again</button></div></div>`;
       $('challengeBox').innerHTML = html;
-      $('prompt').innerHTML = 'Challenge complete! Press <b>New challenge</b> to try another one.';
-      renderChallengeResults();
       return;
     }
 
-    const t=curTask(), info=taskInfo(t);
-    $('prompt').innerHTML = `<b>Challenge:</b> ${info.short}`;
-    if(ch.note) html += `<div class="fb info" style="margin:0 0 10px">${ch.note}</div>`;
-    html += `<div class="steptext"><b class="h">${info.title}</b>${info.body}</div>`;
+    const t=curTask(), info=taskInfo(t), drawing = t.kind==='iray'||t.kind==='oray';
+    $('taskBadge').textContent = `Step ${ch.ti+1} / ${ch.tasks.length}`;
+    $('prompt').innerHTML = info.text;
+    if(ch.note) html += `<div class="fb info" style="margin:0 0 12px">${ch.note}</div>`;
 
     if(!ch.ok){
-      if(t.kind==='iray'||t.kind==='oray'){
-        html += `<div class="tools">
-          <button data-tool="v" class="${ch.tool==='v'?'on':''}">┄┄ Dotted line<br><span style="font-size:12px">virtual ray</span></button>
-          <button data-tool="r" class="${ch.tool==='r'?'on':''}">──▶ Solid ray<br><span style="font-size:12px">real ray</span></button>
-        </div>
-        <div class="small">Drag on the board from the start to the end of each line. Draw real rays <b>in the direction light travels</b>. Line ends snap to points and to the mirror. A faint guide line continues your dotted line — use it to <b>aim at the observer’s eye</b>.</div>
-        <div class="row"><button data-act="undo" ${ch.lines.length?'':'disabled'}>↶ Undo</button><button data-act="clear" ${ch.lines.length?'':'disabled'}>Clear</button></div>`;
+      if(drawing){
+        html += `<div class="lbl">Pen</div><div class="tools">
+          <button data-tool="v" class="${ch.tool==='v'?'on':''}">${PEN_V} Dotted</button>
+          <button data-tool="r" class="${ch.tool==='r'?'on':''}">${PEN_R} Solid</button></div>`;
+        if(t.kind==='iray') html += `<div class="tip center">Behind the mirror: dotted · In front: solid</div>`;
       }
       if(t.kind==='iray'){
         const I=htmlLab(ips[t.k].il);
-        html += `<div class="row"><button data-act="can" class="check">✔ Observer CAN see ${I}</button><button data-act="cannot" class="check">✘ Observer CANNOT see ${I}</button></div>`;
+        html += `<div class="answers"><button data-act="can">✔ Can see ${I}</button><button data-act="cannot">✘ Cannot see ${I}</button></div>`;
       } else if(t.kind==='oray'){
-        html += `<div class="row"><button data-act="check" class="check">Check my ray</button></div>`;
+        html += `<div class="answers"><button data-act="check">Check ✔</button></div>`;
       } else if(t.kind==='final'){
-        html += `<div class="row" style="flex-direction:column">
-          <button data-act="final" data-v="whole">The whole image</button>
-          <button data-act="final" data-v="part">Only part of the image</button>
+        html += `<div class="answers" style="margin-top:0">
+          <button data-act="final" data-v="whole">Whole image</button>
+          <button data-act="final" data-v="part">Part of the image</button>
           <button data-act="final" data-v="none">None of the image</button></div>`;
       }
-      html += `<div class="row">`;
-      if(t.kind!=='final') html += `<button data-act="hint" ${ch.hint?'disabled':''}>💡 Hint</button>`;
-      if(ch.tries[ch.ti]>=2) html += `<button data-act="show">Show answer</button>`;
-      html += `</div>`;
     }
-    if(ch.msg) html += `<div class="fb ${ch.msgType}">${ch.msg}</div>`;
+    if(ch.msg) html += `<div class="fb ${ch.msgType}">${ch.msgType==='bad'?'✗ ':ch.msgType==='good'?'✓ ':''}${ch.msg}</div>`;
+    else if(ch.hint && !ch.ok){
+      const H={img:'Follow the blue ⊥ line.', iray:'Follow the blue line to the eye.', oray:'Aim for the blue circle.'}[t.kind];
+      html += `<div class="fb info">💡 ${H}</div>`;
+    }
     if(ch.ok){
-      const last = ch.ti===ch.tasks.length-1 || ch.tasks.slice(ch.ti+1).every((tt)=>tt.kind==='oray'&&ch.rayDone[tt.k]&&!ch.rayDone[tt.k].hit);
-      html += `<div class="row"><button data-act="next" class="primary">${last?'Finish':'Next step ▶'}</button></div>`;
+      const last = ch.ti===ch.tasks.length-1 || ch.tasks.slice(ch.ti+1).every(tt=>tt.kind==='oray'&&ch.rayDone[tt.k]&&!ch.rayDone[tt.k].hit);
+      html += `<div class="nav" style="margin-top:12px"><button data-act="next" class="primary">${last?'Finish ✓':'Next ▶'}</button></div>`;
+    } else {
+      const mini=[];
+      if(drawing){ const d=ch.lines.length?'':'disabled'; mini.push(`<button data-act="undo" ${d}>↶ Undo</button>`,`<button data-act="clear" ${d}>Clear</button>`); }
+      if(t.kind!=='final') mini.push(`<button data-act="hint" ${ch.hint?'disabled':''}>💡 Hint</button>`);
+      if(ch.tries[ch.ti]>=2) mini.push(`<button data-act="show">Show answer</button>`);
+      if(mini.length) html += `<div class="mini">${mini.join('')}</div>`;
     }
-    html += `<div class="row" style="margin-top:14px"><button data-act="restart">Start this challenge again</button><button data-act="new">New challenge</button></div>`;
+    html += `</div><div class="foot"><button data-act="restart" class="link">↻ Restart</button><button data-act="new" class="link">New challenge ▶</button></div>`;
     $('challengeBox').innerHTML = html;
-    renderChallengeResults();
-  }
-
-  function renderChallengeResults(){
-    const ch=st.ch, ips=imagePoints();
-    const name = t=>{
-      if(t.kind==='final') return 'Conclusion';
-      const ip=ips[t.k];
-      if(t.kind==='img') return `Locate ${htmlLab(ip.il)}`;
-      if(t.kind==='iray') return `Join ${htmlLab(ip.il)} to observer`;
-      return `Ray from ${htmlLab(ip.ol)}`;
-    };
-    const st_ = (r,i)=>({
-      first:'<span class="yes">✓ first try</span>',
-      retry:`<span style="color:#e67700;font-weight:700">✓ after ${ch.tries[i]+1} tries</span>`,
-      shown:'<span class="no">answer shown</span>',
-      skip:'<span class="muted">not needed</span>'
-    })[r] || (i===ch.ti&&!ch.done ? '<span class="muted">in progress…</span>' : '<span class="muted">—</span>');
-    $('results').innerHTML = ch.tasks.map((t,i)=>`<div class="res-row"><b style="width:22px">${SYM(t)}</b><div style="flex:1">${name(t)}</div><div>${st_(ch.record[i],i)}</div></div>`).join('');
   }
 
   // ---------- interaction ----------
@@ -1057,7 +1025,8 @@
     if(e.key==='ArrowLeft') setStep(st.step-1);
   });
 
-  $('preset').onchange=e=>loadPreset(e.target.value);
+  $('exRow').innerHTML = Object.entries(PRESETS).map(([k,p])=>`<button data-ex="${k}">Example ${p.n}</button>`).join('');
+  $('exRow').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) loadPreset(b.dataset.ex); });
   document.querySelectorAll('#typeSeg button').forEach(b=>b.onclick=()=>{
     const t=b.dataset.type; if(t===st.type) return;
     st.type=t;
@@ -1066,7 +1035,7 @@
       if(!inB(O2,0.3)) O2=P(st.O1.x+2,st.O1.y);
       st.O2=O2; st.labels={...ARROW_L};
     } else st.labels={...POINT_L};
-    st.prompt=''; render();
+    st.prompt=''; st.preset=null; render();
   });
   const defaultNames = ()=>st.obs.every(o=>o.name==='observer'||/^[ABC]$/.test(o.name));
   $('addObs').onclick=()=>{
@@ -1084,7 +1053,7 @@
     render();
   };
 
-  $('tabExplore').onclick=()=>{ if(st.mode==='explore') return; st.mode='explore'; loadPreset($('preset').value); };
+  $('tabExplore').onclick=()=>{ if(st.mode==='explore') return; st.mode='explore'; loadPreset(st.preset||'ex1'); };
   $('tabChallenge').onclick=()=>{ st.mode='challenge'; newChallenge(); };
   $('challengeBox').addEventListener('click',e=>{
     const b=e.target.closest('button'); if(!b) return;
@@ -1110,7 +1079,7 @@
   bindOpt('optCons','cons'); bindOpt('optVis','vis'); bindOpt('optRegion','region'); bindOpt('optNormals','normals');
   $('snap').onchange=e=>{st.snap=+e.target.value;};
 
-  loadPreset('whole');
+  loadPreset('ex1');
 })();
 </script>
 </body>
