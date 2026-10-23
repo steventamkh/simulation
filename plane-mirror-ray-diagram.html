@@ -10,7 +10,7 @@
     --accent:#1971c2; --accent-soft:#e7f1fb; --ok:#2b8a3e; --bad:#c92a2a;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:15px;line-height:1.4}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"PingFang HK","Microsoft JhengHei","Noto Sans HK",sans-serif;font-size:15px;line-height:1.4}
   button{font:inherit;cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 12px;color:var(--ink)}
   button:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
   button:disabled{opacity:.35;cursor:not-allowed}
@@ -26,6 +26,8 @@
   .mode{display:inline-flex;background:#dde3ea;border-radius:11px;padding:3px}
   .mode button{border:0;background:transparent;padding:8px 22px;border-radius:9px;font-weight:700;color:var(--muted)}
   .mode button.on{background:#fff;color:var(--accent);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+  .topright{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .lang button{padding:8px 16px}
 
   .wrap{max-width:1240px;margin:0 auto;padding:8px 16px 24px;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;align-items:start}
   @media (max-width:900px){.wrap{grid-template-columns:1fr}}
@@ -101,12 +103,17 @@
 </style>
 </head>
 <body>
-<a href="./" style="display:inline-flex;align-items:center;gap:6px;margin:10px 0 0 max(16px,env(safe-area-inset-left,0px));min-height:36px;padding:4px 12px;border-radius:999px;border:1px solid rgba(127,140,150,.35);font:500 13px/1.2 system-ui,-apple-system,sans-serif;color:inherit;text-decoration:none;opacity:.85">&#8592; All simulations</a>
+<a id="homeLink" href="./" style="display:inline-flex;align-items:center;gap:6px;margin:10px 0 0 max(16px,env(safe-area-inset-left,0px));min-height:36px;padding:4px 12px;border-radius:999px;border:1px solid rgba(127,140,150,.35);font:500 13px/1.2 system-ui,-apple-system,sans-serif;color:inherit;text-decoration:none;opacity:.85">&#8592; All simulations</a>
 <header class="topbar">
-  <h1>Plane Mirror: Can the Observer See the Image?</h1>
-  <div class="mode">
-    <button id="tabExplore" class="on">Explore</button>
-    <button id="tabChallenge">Challenge</button>
+  <h1 data-t="h1">Plane Mirror: Can the Observer See the Image?</h1>
+  <div class="topright">
+    <div class="mode lang" role="group" aria-label="Language / 語言">
+      <button id="lang-en" type="button">EN</button><button id="lang-zh" type="button">中文</button>
+    </div>
+    <div class="mode">
+      <button id="tabExplore" class="on" data-t="explore">Explore</button>
+      <button id="tabChallenge" data-t="challenge">Challenge</button>
+    </div>
   </div>
 </header>
 
@@ -116,68 +123,62 @@
     <svg id="board" xmlns="http://www.w3.org/2000/svg"></svg>
     <div id="warn" class="warn"></div>
     <div class="legend">
-      <span><svg width="40" height="12"><line x1="2" y1="6" x2="38" y2="6" stroke="#f08c00" stroke-width="2.2"/><polygon points="25,6 16,2 16,10" fill="#f08c00"/></svg>real ray</span>
-      <span><svg width="40" height="12"><line x1="2" y1="6" x2="38" y2="6" stroke="#f08c00" stroke-width="2" stroke-dasharray="5 4"/></svg>virtual ray</span>
-      <span><svg width="40" height="12"><line x1="2" y1="6" x2="32" y2="6" stroke="#222" stroke-width="2" stroke-dasharray="5 4"/><polygon points="38,6 29,2 29,10" fill="#222"/></svg>image</span>
-      <span><svg width="40" height="12"><line x1="2" y1="6" x2="38" y2="6" stroke="#1c7ed6" stroke-width="2" stroke-dasharray="5 4"/></svg>misses mirror</span>
+      <span><svg width="40" height="12"><line x1="2" y1="6" x2="38" y2="6" stroke="#f08c00" stroke-width="2.2"/><polygon points="25,6 16,2 16,10" fill="#f08c00"/></svg><span data-t="lgReal">real ray</span></span>
+      <span><svg width="40" height="12"><line x1="2" y1="6" x2="38" y2="6" stroke="#f08c00" stroke-width="2" stroke-dasharray="5 4"/></svg><span data-t="lgVirt">virtual ray</span></span>
+      <span><svg width="40" height="12"><line x1="2" y1="6" x2="32" y2="6" stroke="#222" stroke-width="2" stroke-dasharray="5 4"/><polygon points="38,6 29,2 29,10" fill="#222"/></svg><span data-t="lgImg">image</span></span>
+      <span><svg width="40" height="12"><line x1="2" y1="6" x2="38" y2="6" stroke="#1c7ed6" stroke-width="2" stroke-dasharray="5 4"/></svg><span data-t="lgMiss">misses mirror</span></span>
     </div>
   </section>
 
   <aside class="side">
     <div id="explorePanel">
       <div class="card">
-        <div class="lbl">Example</div>
+        <div class="lbl" data-t="lblExample">Example</div>
         <div class="exgrid" id="exRow"></div>
       </div>
 
       <div class="card">
-        <div class="lbl">Steps</div>
+        <div class="lbl" data-t="lblSteps">Steps</div>
         <div id="stepBtns" class="steps"></div>
         <div id="stepText" class="steptext"></div>
         <div class="nav">
-          <button id="prev">◀ Back</button>
-          <button id="next" class="primary">Next ▶</button>
+          <button id="prev" data-t="back">◀ Back</button>
+          <button id="next" class="primary" data-t="next">Next ▶</button>
         </div>
-        <div class="center"><button id="all" class="link">Show all steps</button></div>
+        <div class="center"><button id="all" class="link" data-t="showAll">Show all steps</button></div>
       </div>
 
       <div class="card" id="resultCard">
-        <div class="lbl">Result</div>
+        <div class="lbl" data-t="lblResult">Result</div>
         <div id="results"></div>
       </div>
 
       <details class="card">
-        <summary>More settings</summary>
+        <summary data-t="moreSettings">More settings</summary>
         <div class="opt"><div class="seg" id="typeSeg">
-          <button data-type="arrow">Arrow object</button>
-          <button data-type="point">Point object</button>
+          <button data-type="arrow" data-t="arrowObj">Arrow object</button>
+          <button data-type="point" data-t="pointObj">Point object</button>
         </div></div>
-        <div class="opt">Observers:
+        <div class="opt"><span data-t="observers">Observers:</span>
           <button id="remObs">−</button><button id="addObs">+</button>
         </div>
-        <label class="opt"><input type="checkbox" id="optCons" checked> Construction lines</label>
-        <label class="opt"><input type="checkbox" id="optVis" checked> Highlight the part of image seen</label>
-        <label class="opt"><input type="checkbox" id="optRegion"> Shade the viewing region</label>
-        <label class="opt"><input type="checkbox" id="optNormals"> Normals and angles</label>
-        <label class="opt">Snap to grid
+        <label class="opt"><input type="checkbox" id="optCons" checked> <span data-t="optCons">Construction lines</span></label>
+        <label class="opt"><input type="checkbox" id="optVis" checked> <span data-t="optVis">Highlight the part of image seen</span></label>
+        <label class="opt"><input type="checkbox" id="optRegion"> <span data-t="optRegion">Shade the viewing region</span></label>
+        <label class="opt"><input type="checkbox" id="optNormals"> <span data-t="optNormals">Normals and angles</span></label>
+        <label class="opt"><span data-t="snapLbl">Snap to grid</span>
           <select id="snap">
-            <option value="1">1 square</option>
-            <option value="0.5" selected>½ square</option>
-            <option value="0.25">¼ square</option>
-            <option value="0">off</option>
+            <option value="1" data-t="snap1">1 square</option>
+            <option value="0.5" selected data-t="snapHalf">½ square</option>
+            <option value="0.25" data-t="snapQuarter">¼ square</option>
+            <option value="0" data-t="snapOff">off</option>
           </select>
         </label>
       </details>
 
       <details class="card">
-        <summary>Drawing rules</summary>
-        <ol class="conv">
-          <li>Solid lines: objects and real rays.</li>
-          <li>Dotted lines: images and virtual rays.</li>
-          <li>Real rays have arrows; virtual rays do not.</li>
-          <li>One ray from each point to the observer.</li>
-          <li>Line misses the mirror → that point cannot be seen.</li>
-        </ol>
+        <summary data-t="drawingRules">Drawing rules</summary>
+        <ol class="conv" data-h="rulesList"></ol>
       </details>
     </div>
 
@@ -193,6 +194,187 @@
   const COL = { o1:'#f08c00', o2:'#9c36b5', blue:'#1c7ed6', ink:'#212529', grey:'#868e96', bad:'#e03131' };
   const OBS_COL = ['#2b8a3e', '#1c7ed6', '#e8590c'];
   const $ = id => document.getElementById(id);
+  // ================= TEXT (English / 中文) =================
+  const TXT = {
+  en:{
+    title:'Plane Mirror Ray Diagram', home:'← All simulations',
+    h1:'Plane Mirror: Can the Observer See the Image?', explore:'Explore', challenge:'Challenge',
+    lgReal:'real ray', lgVirt:'virtual ray', lgImg:'image', lgMiss:'misses mirror',
+    lblExample:'Example', lblSteps:'Steps', lblResult:'Result',
+    back:'◀ Back', next:'Next ▶', showAll:'Show all steps',
+    moreSettings:'More settings', arrowObj:'Arrow object', pointObj:'Point object', observers:'Observers:',
+    optCons:'Construction lines', optVis:'Highlight the part of image seen', optRegion:'Shade the viewing region', optNormals:'Normals and angles',
+    snapLbl:'Snap to grid', snap1:'1 square', snapHalf:'½ square', snapQuarter:'¼ square', snapOff:'off',
+    drawingRules:'Drawing rules',
+    rulesList:'<li>Solid lines: objects and real rays.</li><li>Dotted lines: images and virtual rays.</li><li>Real rays have arrows; virtual rays do not.</li><li>One ray from each point to the observer.</li><li>Line misses the mirror → that point cannot be seen.</li>',
+    mirror:'mirror', cannotSee:l=>`cannot see ${l}`, onMirror:'on mirror', obsWord:'observer', eyeWord:'eye',
+    tooShortMirror:'The mirror is too short.',
+    onLine:'The object cannot lie on the line of the mirror. Drag it in front of the mirror.',
+    sameSide:'The whole object must be on the same side of the mirror (in front of it).',
+    start:'Start',
+    st0:()=>'Drag the dots to change the set-up. Then press <b>Next</b>.',
+    st1:img=>`Locate the image ${img}:<div class="tip">same distance behind the mirror, on a line ⊥ to it</div>`,
+    st2:hi=>`Join ${hi} to the eye:<div class="tip">dotted behind the mirror, solid in front.<br>Misses the mirror → cannot see ${hi}</div>`,
+    st3:h=>`Draw a solid ray from ${h} to that point on the mirror.`,
+    st4:ti=>`Repeat ② and ③ for ${ti}.`,
+    exampleN:n=>`Example ${n}`, exploreBadge:'Explore', dragPrompt:'Drag the dots, then press Next.',
+    presets:{
+      ex1:'Can the observer see the whole image?',
+      ex2:'Why can’t the observer see I₂? Drag the observer to fix it.',
+      ex3:'Can A, B and C see the image? Drag C until it can.',
+      ex4:'Can Leon see Patrick (P) in the mirror?',
+      ex5:'Can P see the images of X and Y?',
+      ex6:'Shortest mirror to see your whole body? Drag the mirror ends.'
+    },
+    sees:(nm,kind)=>`${nm} sees ${{
+      whole:'<span class="yes">whole image</span>',
+      part:'<span style="color:#e67700;font-weight:700">part of the image</span>',
+      image:'<span class="yes">the image</span>',
+      none:'<span class="no">nothing</span>'}[kind]}`,
+    Observer:'Observer', Eye:'Eye',
+    finalQ:'What can the observer see?',
+    taskImg:(I,O)=>`Click where the image ${I} of ${O} is.`,
+    taskIray:I=>`Draw a line from ${I} to the eye. Can the observer see ${I}?`,
+    taskOray:O=>`Draw a solid ray from ${O} to the mirror.`,
+    wDotted:'dotted line', wRay:'ray',
+    m:{
+      startOn:(w,l)=>`Start the ${w} exactly on ${l}.`,
+      drawFrom:(w,l)=>`Draw a ${w} from ${l} to the mirror.`,
+      endOnMirror:w=>`End the ${w} on the mirror.`,
+      tooLong:w=>`Too long — stop the ${w} on the mirror.`,
+      tooShort:w=>`Too short — extend the ${w} to the mirror.`,
+      correct:()=>'Correct!',
+      behind:()=>'The image is <b>behind</b> the mirror.',
+      perp:O=>`It must be on a line <b>⊥</b> to the mirror through ${O}.`,
+      dist:O=>`Check the <b>distance</b>: same as ${O} in front.`,
+      drawFirst:I=>`Draw the line from ${I} first.`,
+      breakLine:()=>'Break the line at the mirror: dotted behind, solid in front.',
+      dottedBehind:()=>'Behind the mirror, use a <b>dotted</b> line.',
+      aimEye:()=>'Aim the dotted line at the eye (follow the grey guide).',
+      nowSolid:()=>'Now draw a solid ray from the mirror to the eye.',
+      solidFront:()=>'In front of the mirror, use a <b>solid</b> ray.',
+      arrowME:()=>'Wrong arrow direction: mirror → eye.',
+      startWhereMeets:()=>'Start the solid ray where the dotted line meets the mirror.',
+      tooMany:()=>'Too many lines — press Undo.',
+      passesLook:()=>'Your line passes through the mirror. Look again!',
+      canSee:I=>`Correct! The observer can see ${I}.`,
+      reallyHit:I=>`Does the line from ${I} to the eye really hit the mirror? Draw it all the way to the eye.`,
+      allTheWay:()=>'Draw the line all the way to the eye.',
+      startExactly:I=>`Start the line exactly on ${I}.`,
+      noReal:()=>'No real light here — use a <b>dotted</b> line.',
+      missesLook:()=>'Your line misses the mirror. Look again!',
+      cannotSeeOk:I=>`Correct! The line misses the mirror, so ${I} cannot be seen.`,
+      drawRayFirst:O=>`Draw the ray from ${O} first.`,
+      solidReal:()=>'Use a <b>solid</b> ray — this light is real.',
+      arrowOM:O=>`Wrong arrow direction: ${O} → mirror.`,
+      samePoint:()=>'Hit the mirror at the <b>same point</b> as the dotted line.',
+      finalWrong:()=>'Not quite — check which rays reach the eye.',
+      answer:c=>'Answer: '+{whole:'The whole image.',part:'Only part of the image.',none:'None of the image.'}[c],
+      hereAnswer:()=>'Here is the answer.',
+      skipNote:(I,O)=>`${I} can’t be seen, so no ray from ${O} is needed.`
+    },
+    doneBadge:'🎉', donePrompt:'Well done! Challenge complete.', firstTime:'correct first time',
+    newCh:'New challenge ▶', tryAgain:'↻ Try this one again', stepOf:(a,b)=>`Step ${a} / ${b}`,
+    pen:'Pen', dotted:'Dotted', solid:'Solid', penTip:'Behind the mirror: dotted · In front: solid',
+    canBtn:I=>`✔ Can see ${I}`, cannotBtn:I=>`✘ Cannot see ${I}`, checkBtn:'Check ✔',
+    fWhole:'Whole image', fPart:'Part of the image', fNone:'None of the image',
+    hints:{img:'Follow the blue ⊥ line.', iray:'Follow the blue line to the eye.', oray:'Aim for the blue circle.'},
+    finish:'Finish ✓', nextBtn:'Next ▶', undo:'↶ Undo', clear:'Clear', hint:'💡 Hint', showAns:'Show answer', restart:'↻ Restart'
+  },
+  zh:{
+    title:'平面鏡光線圖', home:'← 所有模擬',
+    h1:'平面鏡：觀察者能看到像嗎？', explore:'探索', challenge:'挑戰',
+    lgReal:'實光線', lgVirt:'虛光線', lgImg:'像', lgMiss:'沒有碰到鏡',
+    lblExample:'例子', lblSteps:'步驟', lblResult:'結果',
+    back:'◀ 上一步', next:'下一步 ▶', showAll:'顯示所有步驟',
+    moreSettings:'更多設定', arrowObj:'箭頭物體', pointObj:'點物體', observers:'觀察者數目：',
+    optCons:'作圖線', optVis:'標示看到的部分像', optRegion:'顯示能看到像的範圍', optNormals:'法線及角度',
+    snapLbl:'對齊格線', snap1:'1 格', snapHalf:'½ 格', snapQuarter:'¼ 格', snapOff:'關閉',
+    drawingRules:'作圖規則',
+    rulesList:'<li>實線：物體及實光線。</li><li>虛線：像及虛光線。</li><li>實光線有箭頭；虛光線沒有箭頭。</li><li>由每一點畫一條光線到觀察者。</li><li>線沒有碰到鏡 → 看不到那一點。</li>',
+    mirror:'鏡', cannotSee:l=>`看不到 ${l}`, onMirror:'在鏡上', obsWord:'觀察者', eyeWord:'眼睛',
+    tooShortMirror:'鏡太短了。',
+    onLine:'物體不可以在鏡所在的直線上。請把它拖到鏡的前面。',
+    sameSide:'整個物體必須在鏡的同一邊（鏡的前面）。',
+    start:'開始',
+    st0:()=>'拖動各點以改變佈置，然後按<b>下一步</b>。',
+    st1:img=>`找出像 ${img} 的位置：<div class="tip">像在鏡後，與物體到鏡的距離相同，並在與鏡面垂直 (⊥) 的直線上</div>`,
+    st2:hi=>`把 ${hi} 連到眼睛：<div class="tip">鏡後用虛線，鏡前用實線。<br>沒有碰到鏡 → 看不到 ${hi}</div>`,
+    st3:h=>`由 ${h} 畫一條實線光線到鏡上的那一點。`,
+    st4:ti=>`對 ${ti} 重複步驟 ② 和 ③。`,
+    exampleN:n=>`例子 ${n}`, exploreBadge:'探索', dragPrompt:'拖動各點，然後按「下一步」。',
+    presets:{
+      ex1:'觀察者能看到整個像嗎？',
+      ex2:'為甚麼觀察者看不到 I₂？拖動觀察者，令他能看到。',
+      ex3:'A、B 和 C 能看到像嗎？拖動 C，直至它能看到。',
+      ex4:'Leon 能在鏡中看到 Patrick (P) 嗎？',
+      ex5:'P 能看到 X 和 Y 的像嗎？',
+      ex6:'要看到全身，鏡最短要多長？拖動鏡的兩端。'
+    },
+    sees:(nm,kind)=>({
+      whole:`${nm}看到<span class="yes">整個像</span>`,
+      part:`${nm}看到<span style="color:#e67700;font-weight:700">部分像</span>`,
+      image:`${nm}<span class="yes">看到像</span>`,
+      none:`${nm}<span class="no">看不到像</span>`}[kind]),
+    Observer:'觀察者', Eye:'眼睛',
+    finalQ:'觀察者能看到甚麼？',
+    taskImg:(I,O)=>`點按 ${O} 的像 ${I} 所在的位置。`,
+    taskIray:I=>`由 ${I} 畫一條線到眼睛。觀察者能看到 ${I} 嗎？`,
+    taskOray:O=>`由 ${O} 畫一條實線光線到鏡上。`,
+    wDotted:'虛線', wRay:'光線',
+    m:{
+      startOn:(w,l)=>`${w}要剛好由 ${l} 開始。`,
+      drawFrom:(w,l)=>`由 ${l} 畫一條${w}到鏡上。`,
+      endOnMirror:w=>`${w}要在鏡上終止。`,
+      tooLong:w=>`太長了——${w}要停在鏡上。`,
+      tooShort:w=>`太短了——把${w}延長至鏡上。`,
+      correct:()=>'正確！',
+      behind:()=>'像在鏡的<b>後面</b>。',
+      perp:O=>`像必須在經過 ${O} 並與鏡<b>垂直 (⊥)</b> 的直線上。`,
+      dist:O=>`檢查<b>距離</b>：像在鏡後的距離，與 ${O} 在鏡前的距離相同。`,
+      drawFirst:I=>`先由 ${I} 畫線。`,
+      breakLine:()=>'線要在鏡上分開：鏡後用虛線，鏡前用實線。',
+      dottedBehind:()=>'在鏡的後面，要用<b>虛線</b>。',
+      aimEye:()=>'把虛線對準眼睛（沿灰色輔助線）。',
+      nowSolid:()=>'現在由鏡上畫一條實線光線到眼睛。',
+      solidFront:()=>'在鏡的前面，要用<b>實線</b>光線。',
+      arrowME:()=>'箭頭方向錯誤：應該是 鏡 → 眼睛。',
+      startWhereMeets:()=>'實線光線要由虛線與鏡相交的位置開始。',
+      tooMany:()=>'線太多了——請按「復原」。',
+      passesLook:()=>'你的線穿過了鏡。再看清楚！',
+      canSee:I=>`正確！觀察者能看到 ${I}。`,
+      reallyHit:I=>`由 ${I} 到眼睛的線真的會碰到鏡嗎？把線一直畫到眼睛。`,
+      allTheWay:()=>'把線一直畫到眼睛。',
+      startExactly:I=>`線要剛好由 ${I} 開始。`,
+      noReal:()=>'這裏沒有真實的光——要用<b>虛線</b>。',
+      missesLook:()=>'你的線沒有碰到鏡。再看清楚！',
+      cannotSeeOk:I=>`正確！這條線沒有碰到鏡，所以看不到 ${I}。`,
+      drawRayFirst:O=>`先由 ${O} 畫光線。`,
+      solidReal:()=>'要用<b>實線</b>光線——這是真實的光。',
+      arrowOM:O=>`箭頭方向錯誤：應該是 ${O} → 鏡。`,
+      samePoint:()=>'光線要射到鏡上與虛線<b>相同的一點</b>。',
+      finalWrong:()=>'未完全正確——檢查哪些光線能到達眼睛。',
+      answer:c=>'答案：'+{whole:'整個像。',part:'只看到部分像。',none:'完全看不到像。'}[c],
+      hereAnswer:()=>'這是答案。',
+      skipNote:(I,O)=>`看不到 ${I}，所以不需要畫由 ${O} 射出的光線。`
+    },
+    doneBadge:'🎉', donePrompt:'做得好！挑戰完成。', firstTime:'首次答對',
+    newCh:'新挑戰 ▶', tryAgain:'↻ 再試這一題', stepOf:(a,b)=>`第 ${a} / ${b} 步`,
+    pen:'筆', dotted:'虛線', solid:'實線', penTip:'鏡後：虛線 · 鏡前：實線',
+    canBtn:I=>`✔ 看到 ${I}`, cannotBtn:I=>`✘ 看不到 ${I}`, checkBtn:'檢查 ✔',
+    fWhole:'整個像', fPart:'部分像', fNone:'完全看不到像',
+    hints:{img:'沿着藍色的垂直 (⊥) 線。', iray:'沿着藍色線到眼睛。', oray:'對準藍色圓圈。'},
+    finish:'完成 ✓', nextBtn:'下一步 ▶', undo:'↶ 復原', clear:'清除', hint:'💡 提示', showAns:'顯示答案', restart:'↻ 重新開始'
+  }};
+  // language choice is remembered on this device and shared by all simulations on this site
+  let lang='en';
+  try{ const s=localStorage.getItem('sim-lang'); if(s==='zh'||s==='en') lang=s; }catch(e){}
+  const tx = ()=>TXT[lang];
+  // a message "thunk": stored as a function so it can be re-shown in the other language
+  const M = (k,...a)=>()=>tx().m[k](...a);
+  const say = m => typeof m==='function' ? m() : (m||'');
+  const dispName = n => n==='observer' ? tx().obsWord : n==='eye' ? tx().eyeWord : n;
+
 
   // ---------- vector helpers ----------
   const P = (x,y)=>({x,y});
@@ -255,7 +437,7 @@
     st.M1 = P(...p.M1); st.M2 = P(...p.M2);
     st.obs = p.obs.map(o=>({x:o[0],y:o[1],name:o[2]}));
     st.labels = {...(p.type==='arrow'?ARROW_L:POINT_L), ...(p.labels||{})};
-    st.prompt = p.prompt; st.preset = key;
+    st.prompt = key; st.preset = key;
     st.step = 0;
     render();
   }
@@ -264,13 +446,13 @@
 
   function validity(){
     const {M1,M2}=st;
-    if(len(sub(M2,M1))<0.2) return {ok:false,msg:'The mirror is too short.'};
+    if(len(sub(M2,M1))<0.2) return {ok:false,msg:tx().tooShortMirror};
     const s1 = side(st.O1,M1,M2);
-    if(Math.abs(s1)<1e-6) return {ok:false,msg:'The object cannot lie on the line of the mirror. Drag it in front of the mirror.'};
+    if(Math.abs(s1)<1e-6) return {ok:false,msg:tx().onLine};
     if(st.type==='arrow'){
       const s2 = side(st.O2,M1,M2);
       if(Math.abs(s2)<1e-6 || Math.sign(s2)!==Math.sign(s1))
-        return {ok:false,msg:'The whole object must be on the same side of the mirror (in front of it).'};
+        return {ok:false,msg:tx().sameSide};
     }
     return {ok:true,msg:''};
   }
@@ -371,7 +553,7 @@
       const o = far===M1 ? mul(md,-1) : md;
       lp = add(far, add(mul(o,0.35), P(o.x>0?0.35:-0.35,0)));
     }
-    top.push(label(lp,'mirror',{size:14,c:'#2f9e44'}));
+    top.push(label(lp,tx().mirror,{size:14,c:'#2f9e44'}));
   }
   function drawImageArrow(out,top,ips){
     const I1=ips[0].I, I2=ips[1].I, d=sub(I1,I2);
@@ -403,12 +585,12 @@
       out.push(circle(E,6.5,{fill:COL.ink}));
       if(st.obs.length>1) out.push(circle(E,10,{stroke:OBS_COL[j]}));
       const single = E.name.length<=1;
-      top.push(label(add(E,P(single?0.32:0,single?-0.3:0.42)),E.name,{size:single?19:15}));
+      top.push(label(add(E,P(single?0.32:0,single?-0.3:0.42)),dispName(E.name),{size:single?19:15}));
     });
   }
   function cannotLabel(top,I,E,il){
     const m=lerp(I,E,0.6), n=upNormal(sub(E,I));
-    top.push(`<text x="${fx(m.x+n.x*0.3)}" y="${fx(m.y+n.y*0.3)}" font-size="14" fill="${COL.blue}" text-anchor="middle" dominant-baseline="middle" style="paint-order:stroke;stroke:#fffdf2;stroke-width:4px">cannot see ${labelInner(il,14)}</text>`);
+    top.push(`<text x="${fx(m.x+n.x*0.3)}" y="${fx(m.y+n.y*0.3)}" font-size="14" fill="${COL.blue}" text-anchor="middle" dominant-baseline="middle" style="paint-order:stroke;stroke:#fffdf2;stroke-width:4px">${tx().cannotSee(labelInner(il,14))}</text>`);
   }
   function finishSvg(out,top,handles=''){
     svg.innerHTML = `<defs><clipPath id="clipB"><rect x="0" y="0" width="${W*U}" height="${H*U}"/></clipPath></defs>`+
@@ -519,13 +701,13 @@
     const L=st.labels, A=st.type==='arrow';
     const h=htmlLab(L.h), hi=htmlLab(L.hi);
     const img = A ? hi+htmlLab(L.ti) : hi;
-    const s=[
-      ['Start', 'Drag the dots to change the set-up. Then press <b>Next</b>.'],
-      ['①', `Locate the image ${img}:<div class="tip">same distance behind the mirror, on a line ⊥ to it</div>`],
-      ['②', `Join ${hi} to the eye:<div class="tip">dotted behind the mirror, solid in front.<br>Misses the mirror → cannot see ${hi}</div>`],
-      ['③', `Draw a solid ray from ${h} to that point on the mirror.`]
+    const T=tx(), s=[
+      [T.start, T.st0()],
+      ['①', T.st1(img)],
+      ['②', T.st2(hi)],
+      ['③', T.st3(h)]
     ];
-    if(A) s.push(['④', `Repeat ② and ③ for ${htmlLab(L.ti)}.`]);
+    if(A) s.push(['④', T.st4(htmlLab(L.ti))]);
     return s;
   }
 
@@ -550,8 +732,8 @@
     $('next').disabled = st.step===mx;
     $('all').style.visibility = st.step===mx ? 'hidden' : 'visible';
     const pr = PRESETS[st.preset];
-    $('taskBadge').textContent = pr ? 'Example '+pr.n : 'Explore';
-    $('prompt').innerHTML = st.prompt ? esc(st.prompt) : 'Drag the dots, then press Next.';
+    $('taskBadge').textContent = pr ? tx().exampleN(pr.n) : tx().exploreBadge;
+    $('prompt').innerHTML = st.prompt ? esc(tx().presets[st.prompt]) : tx().dragPrompt;
     $('exRow').querySelectorAll('button').forEach(b=>b.classList.toggle('on', b.dataset.ex===st.preset));
 
     const rc=$('resultCard');
@@ -562,11 +744,11 @@
       let verdict;
       if(st.type==='arrow'){
         const f = visibleRuns(E,ips).frac;
-        verdict = f>0.995 ? '<span class="yes">whole image</span>' : f>0 ? '<span style="color:#e67700;font-weight:700">part of the image</span>' : '<span class="no">nothing</span>';
-      } else verdict = hits[0][j] ? '<span class="yes">the image</span>' : '<span class="no">nothing</span>';
-      const nm = E.name==='observer' ? 'Observer' : E.name==='eye' ? 'Eye' : htmlLab(E.name);
+        verdict = f>0.995 ? 'whole' : f>0 ? 'part' : 'none';
+      } else verdict = hits[0][j] ? 'image' : 'none';
+      const nm = E.name==='observer' ? tx().Observer : E.name==='eye' ? tx().Eye : htmlLab(E.name);
       const chip = st.obs.length>1||st.type==='arrow' ? `<span class="chip" style="background:${OBS_COL[j]}"></span>` : '';
-      return `<div class="res-row">${chip}<div>${nm} sees ${verdict}<div class="muted">${parts}</div></div></div>`;
+      return `<div class="res-row">${chip}<div>${tx().sees(nm,verdict)}<div class="muted">${parts}</div></div></div>`;
     }).join('');
   }
 
@@ -647,11 +829,11 @@
 
   function taskInfo(t){
     const ips=imagePoints();
-    if(t.kind==='final') return {sym:'✓', text:'What can the observer see?'};
+    if(t.kind==='final') return {sym:'✓', text:tx().finalQ};
     const ip=ips[t.k], I=htmlLab(ip.il), O=htmlLab(ip.ol);
-    if(t.kind==='img') return {sym:'①', text:`Click where the image ${I} of ${O} is.`};
-    if(t.kind==='iray') return {sym:SYM(t), text:`Draw a line from ${I} to the eye. Can the observer see ${I}?`};
-    return {sym:SYM(t), text:`Draw a solid ray from ${O} to the mirror.`};
+    if(t.kind==='img') return {sym:'①', text:tx().taskImg(I,O)};
+    if(t.kind==='iray') return {sym:SYM(t), text:tx().taskIray(I)};
+    return {sym:SYM(t), text:tx().taskOray(O)};
   }
 
   // --- line helpers for checking ---
@@ -695,73 +877,74 @@
   function diagnose(lines,id,lab,what){
     const {M1,M2}=st;
     const mine=lines.filter(L=>touches(L,id));
-    if(!mine.length) return lines.length ? `Start the ${what} exactly on ${lab}.` : `Draw a ${what} from ${lab} to the mirror.`;
+    const W_=()=>tx()[what];
+    if(!mine.length) return lines.length ? ()=>tx().m.startOn(W_(),lab) : ()=>tx().m.drawFrom(W_(),lab);
     const L=mine[mine.length-1], other = L.a.id===id ? L.b : L.a, from = L.a.id===id ? L.a : L.b;
-    if(other.id && other.id!=='M') return `End the ${what} on the mirror.`;
-    if(segX(from,other,M1,M2)) return `Too long — stop the ${what} on the mirror.`;
-    return `Too short — extend the ${what} to the mirror.`;
+    if(other.id && other.id!=='M') return ()=>tx().m.endOnMirror(W_());
+    if(segX(from,other,M1,M2)) return ()=>tx().m.tooLong(W_());
+    return ()=>tx().m.tooShort(W_());
   }
 
   function placeImage(p){
     const t=curTask(), ip=imagePoints()[t.k], {M1,M2}=st;
     const O=htmlLab(ip.ol);
-    if(near(p,ip.I,0.12)){ st.ch.imgOK[t.k]=true; return pass(`Correct!`); }
+    if(near(p,ip.I,0.12)){ st.ch.imgOK[t.k]=true; return pass(M('correct')); }
     st.ch.wrongPt=p;
     const sp=side(p,M1,M2), so=side(ip.O,M1,M2);
-    if(Math.abs(sp)<1e-6 || Math.sign(sp)===Math.sign(so)) return fail(`The image is <b>behind</b> the mirror.`);
-    if(!near(foot(p,M1,M2),foot(ip.O,M1,M2),0.12)) return fail(`It must be on a line <b>⊥</b> to the mirror through ${O}.`);
-    return fail(`Check the <b>distance</b>: same as ${O} in front.`);
+    if(Math.abs(sp)<1e-6 || Math.sign(sp)===Math.sign(so)) return fail(M('behind'));
+    if(!near(foot(p,M1,M2),foot(ip.O,M1,M2),0.12)) return fail(M('perp',O));
+    return fail(M('dist',O));
   }
 
   function checkIray(claimCan){
     const ch=st.ch, t=curTask(), ip=imagePoints()[t.k], E=st.obs[0];
     const h=segX(ip.I,E,st.M1,st.M2), I=htmlLab(ip.il), Iid='I'+t.k, lines=ch.lines;
-    if(!lines.length) return fail(`Draw the line from ${I} first.`);
+    if(!lines.length) return fail(M('drawFirst',I));
     if(h){
-      if(lines.some(L=>ends(L,Iid,'E'))) return fail(`Break the line at the mirror: dotted behind, solid in front.`);
-      if(lines.some(L=>L.type==='r'&&touches(L,Iid))) return fail(`Behind the mirror, use a <b>dotted</b> line.`);
+      if(lines.some(L=>ends(L,Iid,'E'))) return fail(M('breakLine'));
+      if(lines.some(L=>L.type==='r'&&touches(L,Iid))) return fail(M('dottedBehind'));
       const V=lines.find(L=>ends(L,Iid,'M'));
-      if(!V) return fail(diagnose(lines,Iid,I,'dotted line'));
-      if(!near(mEnd(V),h.pt,0.3)) return fail(`Aim the dotted line at the eye (follow the grey guide).`);
+      if(!V) return fail(diagnose(lines,Iid,I,'wDotted'));
+      if(!near(mEnd(V),h.pt,0.3)) return fail(M('aimEye'));
       const R=lines.find(L=>ends(L,'M','E'));
-      if(!R) return fail(`Now draw a solid ray from the mirror to the eye.`);
-      if(R.type!=='r') return fail(`In front of the mirror, use a <b>solid</b> ray.`);
-      if(R.a.id==='E') return fail(`Wrong arrow direction: mirror → eye.`);
-      if(!near(mEnd(R),h.pt,0.3)) return fail(`Start the solid ray where the dotted line meets the mirror.`);
-      if(lines.length>2) return fail(`Too many lines — press Undo.`);
-      if(!claimCan) return fail(`Your line passes through the mirror. Look again!`);
+      if(!R) return fail(M('nowSolid'));
+      if(R.type!=='r') return fail(M('solidFront'));
+      if(R.a.id==='E') return fail(M('arrowME'));
+      if(!near(mEnd(R),h.pt,0.3)) return fail(M('startWhereMeets'));
+      if(lines.length>2) return fail(M('tooMany'));
+      if(!claimCan) return fail(M('passesLook'));
       st.ch.rayDone[t.k]={hit:true,P:h.pt};
-      return pass(`Correct! The observer can see ${I}.`);
+      return pass(M('canSee',I));
     }
-    if(lines.some(L=>touches(L,'M'))) return fail(`Does the line from ${I} to the eye really hit the mirror? Draw it all the way to the eye.`);
+    if(lines.some(L=>touches(L,'M'))) return fail(M('reallyHit',I));
     const V=lines.find(L=>ends(L,Iid,'E'));
-    if(!V) return fail(lines.some(L=>touches(L,Iid)) ? `Draw the line all the way to the eye.` : `Start the line exactly on ${I}.`);
-    if(V.type!=='v') return fail(`No real light here — use a <b>dotted</b> line.`);
-    if(lines.length>1) return fail(`Too many lines — press Undo.`);
-    if(claimCan) return fail(`Your line misses the mirror. Look again!`);
+    if(!V) return fail(lines.some(L=>touches(L,Iid)) ? M('allTheWay') : M('startExactly',I));
+    if(V.type!=='v') return fail(M('noReal'));
+    if(lines.length>1) return fail(M('tooMany'));
+    if(claimCan) return fail(M('missesLook'));
     st.ch.rayDone[t.k]={hit:false};
-    return pass(`Correct! The line misses the mirror, so ${I} cannot be seen.`);
+    return pass(M('cannotSeeOk',I));
   }
 
   function checkOray(){
     const ch=st.ch, t=curTask(), ip=imagePoints()[t.k], Pt=ch.rayDone[t.k].P;
     const O=htmlLab(ip.ol), Oid='O'+t.k, lines=ch.lines;
-    if(!lines.length) return fail(`Draw the ray from ${O} first.`);
+    if(!lines.length) return fail(M('drawRayFirst',O));
     const R=lines.find(L=>ends(L,Oid,'M'));
-    if(!R) return fail(diagnose(lines,Oid,O,'ray'));
-    if(R.type!=='r') return fail(`Use a <b>solid</b> ray — this light is real.`);
-    if(R.a.id==='M') return fail(`Wrong arrow direction: ${O} → mirror.`);
-    if(!near(mEnd(R),Pt,0.3)) return fail(`Hit the mirror at the <b>same point</b> as the dotted line.`);
-    if(lines.length>1) return fail(`Too many lines — press Undo.`);
+    if(!R) return fail(diagnose(lines,Oid,O,'wRay'));
+    if(R.type!=='r') return fail(M('solidReal'));
+    if(R.a.id==='M') return fail(M('arrowOM',O));
+    if(!near(mEnd(R),Pt,0.3)) return fail(M('samePoint'));
+    if(lines.length>1) return fail(M('tooMany'));
     ch.oDone[t.k]=true;
-    return pass(`Correct!`);
+    return pass(M('correct'));
   }
 
   function checkFinal(ans){
     const c=correctFinal();
     st.ch.finalAns=ans;
-    if(ans===c) return pass(`Correct!`);
-    return fail(`Not quite — check which rays reach the eye.`);
+    if(ans===c) return pass(M('correct'));
+    return fail(M('finalWrong'));
   }
 
   function showAnswer(){
@@ -771,8 +954,7 @@
     if(t.kind==='oray') ch.oDone[t.k]=true;
     if(t.kind==='final') ch.finalAns=correctFinal();
     ch.record[ch.ti]='shown';
-    const txt={whole:'The whole image.',part:'Only part of the image.',none:'None of the image.'};
-    pass(t.kind==='final' ? 'Answer: '+txt[correctFinal()] : 'Here is the answer.');
+    pass(t.kind==='final' ? M('answer',correctFinal()) : M('hereAnswer'));
     ch.msgType='info';
   }
 
@@ -783,7 +965,7 @@
       const t=curTask();
       if(t.kind==='oray' && ch.rayDone[t.k] && !ch.rayDone[t.k].hit){
         ch.record[ch.ti]='skip';
-        ch.note=`${htmlLab(ips[t.k].il)} can’t be seen, so no ray from ${htmlLab(ips[t.k].ol)} is needed.`;
+        ch.note=M('skipNote',htmlLab(ips[t.k].il),htmlLab(ips[t.k].ol));
         ch.ti++; continue;
       }
       break;
@@ -859,8 +1041,8 @@
         if(len(sub(D.a,D.b))>0.05){ extend(D,0.85); out.push(studentLine(D,col,0.65)); }
         [D.a,D.b].forEach(e=>{ if(e.id) out.push(circle(e,11,{stroke:'#1c7ed6',w:2,op:.8})); });
         const e=D.b, ips2=imagePoints();
-        const nm = e.id==='M' ? 'on mirror' : e.id==='E' ? 'observer' : e.id&&e.id[0]==='I' ? ips2[+e.id[1]].il : e.id&&e.id[0]==='O' ? ips2[+e.id[1]].ol : '';
-        if(nm && len(sub(D.a,D.b))>0.05) top.push(`<text x="${fx(e.x+0.3)}" y="${fx(e.y-0.35)}" font-size="13" fill="#1c7ed6" font-weight="600" style="paint-order:stroke;stroke:#fffdf2;stroke-width:4px">✓ ${nm==='on mirror'||nm==='observer'?nm:labelInner(nm,13)}</text>`);
+        const nm = e.id==='M' ? tx().onMirror : e.id==='E' ? tx().obsWord : e.id&&e.id[0]==='I' ? ips2[+e.id[1]].il : e.id&&e.id[0]==='O' ? ips2[+e.id[1]].ol : '';
+        if(nm && len(sub(D.a,D.b))>0.05) top.push(`<text x="${fx(e.x+0.3)}" y="${fx(e.y-0.35)}" font-size="13" fill="#1c7ed6" font-weight="600" style="paint-order:stroke;stroke:#fffdf2;stroke-width:4px">✓ ${e.id==='M'||e.id==='E'?nm:labelInner(nm,13)}</text>`);
       }
     }
     if(ch.wrongPt){
@@ -895,61 +1077,62 @@
       const cls = r ? r : (i===ch.ti && !ch.done ? 'cur' : '');
       return `<span class="tchip ${cls}">${i+1}</span>`;
     }).join('');
+    const T=tx();
     let html = `<div class="card"><div class="tasklist">${chips}</div>`;
 
     if(ch.done){
       const n=ch.tasks.filter((_,i)=>ch.record[i]!=='skip').length;
       const first=ch.record.filter(r=>r==='first').length;
-      $('taskBadge').textContent='🎉';
-      $('prompt').innerHTML='Well done! Challenge complete.';
-      html += `<div class="big">${first} / ${n}</div><div class="center muted">correct first time</div>`;
-      if(ch.note) html += `<div class="fb info">${ch.note}</div>`;
-      html += `<div class="nav" style="margin-top:14px"><button data-act="new" class="primary">New challenge ▶</button></div>`;
-      html += `<div class="center"><button data-act="restart" class="link">↻ Try this one again</button></div></div>`;
+      $('taskBadge').textContent=T.doneBadge;
+      $('prompt').innerHTML=T.donePrompt;
+      html += `<div class="big">${first} / ${n}</div><div class="center muted">${T.firstTime}</div>`;
+      if(ch.note) html += `<div class="fb info">${say(ch.note)}</div>`;
+      html += `<div class="nav" style="margin-top:14px"><button data-act="new" class="primary">${T.newCh}</button></div>`;
+      html += `<div class="center"><button data-act="restart" class="link">${T.tryAgain}</button></div></div>`;
       $('challengeBox').innerHTML = html;
       return;
     }
 
     const t=curTask(), info=taskInfo(t), drawing = t.kind==='iray'||t.kind==='oray';
-    $('taskBadge').textContent = `Step ${ch.ti+1} / ${ch.tasks.length}`;
+    $('taskBadge').textContent = T.stepOf(ch.ti+1,ch.tasks.length);
     $('prompt').innerHTML = info.text;
-    if(ch.note) html += `<div class="fb info" style="margin:0 0 12px">${ch.note}</div>`;
+    if(ch.note) html += `<div class="fb info" style="margin:0 0 12px">${say(ch.note)}</div>`;
 
     if(!ch.ok){
       if(drawing){
-        html += `<div class="lbl">Pen</div><div class="tools">
-          <button data-tool="v" class="${ch.tool==='v'?'on':''}">${PEN_V} Dotted</button>
-          <button data-tool="r" class="${ch.tool==='r'?'on':''}">${PEN_R} Solid</button></div>`;
-        if(t.kind==='iray') html += `<div class="tip center">Behind the mirror: dotted · In front: solid</div>`;
+        html += `<div class="lbl">${T.pen}</div><div class="tools">
+          <button data-tool="v" class="${ch.tool==='v'?'on':''}">${PEN_V} ${T.dotted}</button>
+          <button data-tool="r" class="${ch.tool==='r'?'on':''}">${PEN_R} ${T.solid}</button></div>`;
+        if(t.kind==='iray') html += `<div class="tip center">${T.penTip}</div>`;
       }
       if(t.kind==='iray'){
         const I=htmlLab(ips[t.k].il);
-        html += `<div class="answers"><button data-act="can">✔ Can see ${I}</button><button data-act="cannot">✘ Cannot see ${I}</button></div>`;
+        html += `<div class="answers"><button data-act="can">${T.canBtn(I)}</button><button data-act="cannot">${T.cannotBtn(I)}</button></div>`;
       } else if(t.kind==='oray'){
-        html += `<div class="answers"><button data-act="check">Check ✔</button></div>`;
+        html += `<div class="answers"><button data-act="check">${T.checkBtn}</button></div>`;
       } else if(t.kind==='final'){
         html += `<div class="answers" style="margin-top:0">
-          <button data-act="final" data-v="whole">Whole image</button>
-          <button data-act="final" data-v="part">Part of the image</button>
-          <button data-act="final" data-v="none">None of the image</button></div>`;
+          <button data-act="final" data-v="whole">${T.fWhole}</button>
+          <button data-act="final" data-v="part">${T.fPart}</button>
+          <button data-act="final" data-v="none">${T.fNone}</button></div>`;
       }
     }
-    if(ch.msg) html += `<div class="fb ${ch.msgType}">${ch.msgType==='bad'?'✗ ':ch.msgType==='good'?'✓ ':''}${ch.msg}</div>`;
+    if(ch.msg) html += `<div class="fb ${ch.msgType}">${ch.msgType==='bad'?'✗ ':ch.msgType==='good'?'✓ ':''}${say(ch.msg)}</div>`;
     else if(ch.hint && !ch.ok){
-      const H={img:'Follow the blue ⊥ line.', iray:'Follow the blue line to the eye.', oray:'Aim for the blue circle.'}[t.kind];
+      const H=T.hints[t.kind];
       html += `<div class="fb info">💡 ${H}</div>`;
     }
     if(ch.ok){
       const last = ch.ti===ch.tasks.length-1 || ch.tasks.slice(ch.ti+1).every(tt=>tt.kind==='oray'&&ch.rayDone[tt.k]&&!ch.rayDone[tt.k].hit);
-      html += `<div class="nav" style="margin-top:12px"><button data-act="next" class="primary">${last?'Finish ✓':'Next ▶'}</button></div>`;
+      html += `<div class="nav" style="margin-top:12px"><button data-act="next" class="primary">${last?T.finish:T.nextBtn}</button></div>`;
     } else {
       const mini=[];
-      if(drawing){ const d=ch.lines.length?'':'disabled'; mini.push(`<button data-act="undo" ${d}>↶ Undo</button>`,`<button data-act="clear" ${d}>Clear</button>`); }
-      if(t.kind!=='final') mini.push(`<button data-act="hint" ${ch.hint?'disabled':''}>💡 Hint</button>`);
-      if(ch.tries[ch.ti]>=2) mini.push(`<button data-act="show">Show answer</button>`);
+      if(drawing){ const d=ch.lines.length?'':'disabled'; mini.push(`<button data-act="undo" ${d}>${T.undo}</button>`,`<button data-act="clear" ${d}>${T.clear}</button>`); }
+      if(t.kind!=='final') mini.push(`<button data-act="hint" ${ch.hint?'disabled':''}>${T.hint}</button>`);
+      if(ch.tries[ch.ti]>=2) mini.push(`<button data-act="show">${T.showAns}</button>`);
       if(mini.length) html += `<div class="mini">${mini.join('')}</div>`;
     }
-    html += `</div><div class="foot"><button data-act="restart" class="link">↻ Restart</button><button data-act="new" class="link">New challenge ▶</button></div>`;
+    html += `</div><div class="foot"><button data-act="restart" class="link">${T.restart}</button><button data-act="new" class="link">${T.newCh}</button></div>`;
     $('challengeBox').innerHTML = html;
   }
 
@@ -1026,7 +1209,21 @@
     if(e.key==='ArrowLeft') setStep(st.step-1);
   });
 
-  $('exRow').innerHTML = Object.entries(PRESETS).map(([k,p])=>`<button data-ex="${k}">Example ${p.n}</button>`).join('');
+  function exButtons(){ $('exRow').innerHTML = Object.entries(PRESETS).map(([k,p])=>`<button data-ex="${k}" class="${k===st.preset?'on':''}">${tx().exampleN(p.n)}</button>`).join(''); }
+  function applyLang(){
+    const T=tx();
+    document.documentElement.lang = lang==='zh' ? 'zh-HK' : 'en';
+    document.title = T.title;
+    $('homeLink').textContent = T.home;
+    document.querySelectorAll('[data-t]').forEach(e=>{ e.textContent = T[e.dataset.t]; });
+    document.querySelectorAll('[data-h]').forEach(e=>{ e.innerHTML = T[e.dataset.h]; });
+    ['en','zh'].forEach(l=>{ const b=$('lang-'+l); b.classList.toggle('on',lang===l); b.setAttribute('aria-pressed',String(lang===l)); });
+    exButtons();
+  }
+  function setLang(l){ lang=l; try{ localStorage.setItem('sim-lang',l); }catch(e){} applyLang(); render(); }
+  $('lang-en').onclick=()=>setLang('en');
+  $('lang-zh').onclick=()=>setLang('zh');
+  applyLang();
   $('exRow').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) loadPreset(b.dataset.ex); });
   document.querySelectorAll('#typeSeg button').forEach(b=>b.onclick=()=>{
     const t=b.dataset.type; if(t===st.type) return;
