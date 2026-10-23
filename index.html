@@ -166,6 +166,12 @@ footer .inner{padding-block:18px;display:flex;flex-wrap:wrap;gap:6px 18px;justif
    ============================================================ */
 const SIMS = [
   {
+    file: "motion-graph-lab.html",
+    title: "Motion Graph Lab", zh: "運動圖像練習室",
+    desc: "Convert between s–t, v–t and a–t graphs: describe the motion, quick match, complete the graph, and play the motion on a track.",
+    topic: "force", sub: "Motion graphs", kind: "Practice", added: "2026-10-23", icon: "motion"
+  },
+  {
     file: "lens-ray-diagram.html",
     title: "Lens Ray Diagram", zh: "透鏡光線圖",
     desc: "Draw rays through convex and concave lenses to locate the image, then describe it and check with the lens formula.",
@@ -206,6 +212,11 @@ const ICONS = {
     <line x1="30" y1="32" x2="49" y2="24" stroke="var(--ray)" stroke-width="1.4" stroke-dasharray="2.5 2.5" opacity=".75"/>
     <path d="M6 44 q6 -5 12 0 q-6 5 -12 0z" stroke="currentColor" stroke-width="1.6"/>
     <circle cx="12" cy="44" r="1.6" fill="currentColor"/></svg>`,
+  motion: `<svg viewBox="0 0 56 56" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color:var(--tc)">
+    <polyline points="8,6 8,48 52,48" stroke="currentColor" stroke-width="1.8" opacity=".6"/>
+    <path d="M8 44 Q22 44 30 30 T52 12" stroke="currentColor" stroke-width="2.4"/>
+    <line x1="8" y1="36" x2="52" y2="18" stroke="var(--ray)" stroke-width="1.6" stroke-dasharray="3 3" opacity=".8"/>
+    <circle cx="30" cy="30" r="2.6" fill="var(--ray)"/></svg>`,
   generic: `<svg viewBox="0 0 56 56" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--tc)">
     <path d="M22 8h12M24 8v14L12 44a4 4 0 0 0 3.5 6h25a4 4 0 0 0 3.5-6L32 22V8"/><path d="M17 36h22" opacity=".5"/></svg>`
 };
