@@ -40,6 +40,16 @@ header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-betw
 .score{display:flex;gap:6px;font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .score>span{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 10px}
 .score b{color:var(--ink);font-weight:600}
+.record{display:flex;flex-wrap:wrap;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:5px 6px;min-width:0;max-width:100%}
+.record .score>span{background:var(--paper)}
+.nameform{display:flex;gap:6px;align-items:center;flex-wrap:wrap;min-width:0}
+.nameform input{font:inherit;font-size:.9rem;min-height:40px;width:min(250px,62vw);padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+.nameform input[aria-invalid="true"]{border-color:var(--bad)}
+.nameform .btn{min-height:40px;padding:6px 12px}
+.nameask{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:.88rem;padding-left:4px}
+.nameerr{flex-basis:100%;font-size:.78rem;color:var(--bad);padding:0 4px}
+.nametag{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:.95rem;padding:4px 10px;border-radius:999px;background:var(--accent-soft);color:var(--ink);overflow-wrap:anywhere}
+.nametag svg{width:14px;height:14px;flex:none;stroke:var(--accent)}
 select,button,input{font:inherit;color:inherit}
 select{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 10px;min-height:44px}
 .btn{min-height:44px;padding:9px 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:500;touch-action:manipulation}
@@ -103,7 +113,20 @@ select{background:var(--surface);border:1px solid var(--line);border-radius:10px
       <div class="seg" role="group" aria-label="Language / 語言">
         <button id="lang-en" type="button" aria-pressed="true">EN</button><button id="lang-zh" type="button" aria-pressed="false">中文</button>
       </div>
-      <div class="score"><span><span data-t="scoreDone"></span> <b id="sDone">0</b></span><span><span data-t="scorePerfect"></span> <b id="sPerfect">0</b></span></div>
+      <div class="record" id="record">
+        <form class="nameform" id="nameForm" novalidate>
+          <input id="nameIn" autocomplete="off" autocapitalize="words" spellcheck="false" aria-describedby="nameErr">
+          <button class="btn" type="submit" id="nameBtn"></button>
+        </form>
+        <div class="nameask" id="nameAsk" hidden>
+          <span id="nameAskTxt"></span>
+          <button class="btn primary" type="button" id="nameYes"></button>
+          <button class="btn" type="button" id="nameEdit"></button>
+        </div>
+        <span class="nametag" id="nameTag" hidden><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span id="nameTagTxt"></span></span>
+        <div class="score"><span><span data-t="scoreDone"></span> <b id="sDone">0</b></span><span><span data-t="scorePerfect"></span> <b id="sPerfect">0</b></span></div>
+        <span class="nameerr" id="nameErr" hidden></span>
+      </div>
       <select id="caseSel">
         <option value="mixed"></option>
         <option value="any"></option>
@@ -174,6 +197,9 @@ const L={
 en:{
  home:'← All simulations', title:'Lens Ray Diagram', sub:'Convex and concave lenses · locate the image by construction',
  scoreDone:'Diagrams', scorePerfect:'No mistakes', caseLabel:'Lens and object position',
+ namePh:'Class, no. and name: 3A03 Chan Tai Man', nameBtn:'Enter', nameLabel:'Your class, class number and name',
+ nameErr:'Use this format: class, 2-digit class number, then your name, e.g. 3A03 Chan Tai Man.',
+ nameAsk:n=>`Is this right? <b>${n}</b> You can’t change it after this.`, nameYes:'Yes, confirm', nameEdit:'Edit',
  cases:{mixed:'Mixed: convex and concave',any:'Convex lens: any position','1':'Convex lens: object beyond F','2':'Convex lens: object within F',concave:'Concave lens'},
  newQ:'New question', scale:'Scale: 1 small square = 1 cm', rotate:'Tip: turn your phone sideways for a bigger grid.', grid:'Ray diagram grid',
  steps:['Ray 1','Ray 2','Locate image','Draw image','Questions'],
@@ -239,6 +265,9 @@ en:{
 zh:{
  home:'← 所有模擬', title:'透鏡光線圖', sub:'凸透鏡及凹透鏡 · 用作圖法找出像的位置',
  scoreDone:'已完成', scorePerfect:'全對', caseLabel:'透鏡及物體位置',
+ namePh:'班別、學號及姓名：3A03 Chan Tai Man', nameBtn:'輸入', nameLabel:'你的班別、學號及姓名',
+ nameErr:'請用這個格式：班別、兩位數學號，然後是姓名，例如 3A03 Chan Tai Man。',
+ nameAsk:n=>`確定是 <b>${n}</b> 嗎？確定後不能再更改。`, nameYes:'確定', nameEdit:'修改',
  cases:{mixed:'混合：凸透鏡及凹透鏡',any:'凸透鏡：任意位置','1':'凸透鏡：物體在 F 以外','2':'凸透鏡：物體在 F 以內',concave:'凹透鏡'},
  newQ:'新題目', scale:'比例：1 小格 = 1 cm', rotate:'提示：把手機橫放，格紙會更大。', grid:'光線圖格紙',
  steps:['光線 1','光線 2','找出像','畫出像','問題'],
@@ -489,6 +518,36 @@ function update(){
   render();
 }
 
+/* ---------- student name ----------
+   Format "3A03 Chan Tai Man": form (1-6), class letter, 2-digit class number, then the name.
+   Once confirmed it is locked beside the scores. Only reloading the page clears it
+   (it is deliberately NOT saved), together with the scores. */
+let pendingName=null, lockedName=null;
+const escH=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function parseName(raw){
+  const m=raw.trim().replace(/\s+/g,' ').match(/^([1-6])\s?([A-Za-z])\s?(\d{2})\s+(\S.*)$/);
+  if(!m) return null;
+  const name=m[4].split(' ').map(w=>/^[A-Za-z]/.test(w)?w[0].toUpperCase()+w.slice(1).toLowerCase():w).join(' ');
+  return `${m[1]}${m[2].toUpperCase()}${m[3]} ${name}`;
+}
+$('nameForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  if(lockedName) return;
+  const n=parseName($('nameIn').value);
+  if(!n){ $('nameErr').textContent=t().nameErr; $('nameErr').hidden=false; $('nameIn').setAttribute('aria-invalid','true'); $('nameIn').focus(); return; }
+  $('nameErr').hidden=true; $('nameIn').removeAttribute('aria-invalid');
+  pendingName=n; $('nameAskTxt').innerHTML=t().nameAsk(escH(n));
+  $('nameForm').hidden=true; $('nameAsk').hidden=false; $('nameYes').focus();
+});
+$('nameIn').addEventListener('input',()=>{ if(!$('nameErr').hidden){ $('nameErr').hidden=true; $('nameIn').removeAttribute('aria-invalid'); } });
+$('nameEdit').onclick=()=>{ pendingName=null; $('nameAsk').hidden=true; $('nameForm').hidden=false; $('nameIn').focus(); };
+$('nameYes').onclick=()=>{
+  lockedName=pendingName; pendingName=null;
+  $('nameAsk').hidden=true; $('nameForm').remove();          // gone for good until the page is reloaded
+  $('nameTagTxt').textContent=lockedName; $('nameTag').hidden=false;
+  $('nameTag').setAttribute('title',lockedName);
+};
+
 /* ---------- language ---------- */
 function applyLang(){
   const T=t();
@@ -503,6 +562,10 @@ function applyLang(){
   $('caseSel').setAttribute('aria-label',T.caseLabel);
   svg.setAttribute('aria-label',T.grid);
   $('qv').placeholder=`${T.eg} 6.5`; $('qm').placeholder=`${T.eg} 1.5`;
+  if($('nameIn')){ $('nameIn').placeholder=T.namePh; $('nameIn').setAttribute('aria-label',T.nameLabel); $('nameBtn').textContent=T.nameBtn; }
+  $('nameYes').textContent=T.nameYes; $('nameEdit').textContent=T.nameEdit;
+  if(pendingName) $('nameAskTxt').innerHTML=T.nameAsk(escH(pendingName));
+  if(!$('nameErr').hidden) $('nameErr').textContent=T.nameErr;
   $('solBtn').textContent=showSol?T.hideSol:T.showSol;
   $('hintBtn').textContent=$('rules').hidden?T.showRules:T.hideRules;
   if(q){ update(); showFb(); showMarks(); if(!$('formula').hidden) $('formula').innerHTML=T.formula(q,cm,fmt,cave()); }
