@@ -1,0 +1,1244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Practise finding current, voltage, resistance, power and their ratios in series, parallel and mixed circuits for HKDSE Physics.">
+<title>Circuit Analysis Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;font-size:16px}
+body{margin:0}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+
+/* Layout: lab workbench shared with Motion Graph Lab. Level strip on top, circuit on graph paper at left, question and answer at right. */
+:root{
+  --bg:#EDF2F6; --panel:#FFFFFF; --ink:#14212C; --muted:#56687A; --line:#D3DDE6;
+  --grid:#E4EBF1; --wire:#1F3242; --flow:#D2620E; --lamp:#F4B400; --hl:#FFE9A8; --hl-line:#C98A00;
+  --accent:#0E6B7B; --accent-ink:#FFFFFF; --accent-soft:#E0F0F2;
+  --good:#1D8048; --good-bg:#E2F3E9; --bad:#C2352B; --bad-bg:#FBE7E5; --info-bg:#E5EDF4;
+  --f-display:'Bricolage Grotesque','Atkinson Hyperlegible',system-ui,sans-serif;
+  --f-body:'Atkinson Hyperlegible','PingFang TC','Microsoft JhengHei','Noto Sans TC',system-ui,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E151C; --panel:#16212B; --ink:#E4ECF2; --muted:#93A6B7; --line:#273541;
+  --grid:#1C2833; --wire:#C6D4DF; --flow:#F39A48; --lamp:#FFC933; --hl:#4A3C10; --hl-line:#E5B93A;
+  --accent:#3BB3C3; --accent-ink:#06222A; --accent-soft:#14323A;
+  --good:#4CC97F; --good-bg:#12301F; --bad:#F2766B; --bad-bg:#3A1A18; --info-bg:#1A2733;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E151C; --panel:#16212B; --ink:#E4ECF2; --muted:#93A6B7; --line:#273541;
+  --grid:#1C2833; --wire:#C6D4DF; --flow:#F39A48; --lamp:#FFC933; --hl:#4A3C10; --hl-line:#E5B93A;
+  --accent:#3BB3C3; --accent-ink:#06222A; --accent-soft:#14323A;
+  --good:#4CC97F; --good-bg:#12301F; --bad:#F2766B; --bad-bg:#3A1A18; --info-bg:#1A2733;
+  color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:1rem/1.5 var(--f-body)}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 40px;display:flex;flex-direction:column;gap:14px}
+h1,h2,h3{font-family:var(--f-display);margin:0;line-height:1.1;text-wrap:balance}
+h1{font-size:clamp(1.7rem,3.6vw,2.4rem);font-weight:800;letter-spacing:-.01em}
+h2{font-size:1.2rem;font-weight:600}
+a{color:var(--accent)}
+.eyebrow{margin:0 0 4px;font:700 .75rem var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.eyebrow a{color:inherit;text-decoration:none}
+.eyebrow a:hover{text-decoration:underline}
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn{min-height:42px;padding:7px 14px;border:1px solid var(--line);background:var(--panel);border-radius:8px;font-weight:700;font-size:.9rem;cursor:pointer;touch-action:manipulation}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--panel)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+.seg button{border:0;background:none;font-weight:700;font-size:.9rem;padding:8px 14px;min-height:40px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+
+.levels{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.levels button{text-align:left;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 10px;cursor:pointer;display:flex;flex-direction:column;gap:1px;min-width:0}
+.levels .n{font:700 .95rem var(--f-display)}
+.levels .d{font-size:.78rem;color:var(--muted);line-height:1.25}
+.levels button[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.levels button[aria-pressed="true"] .n{color:var(--accent)}
+.levels button:disabled{opacity:.5;cursor:not-allowed}
+@media (max-width:900px){.levels{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:520px){.levels{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.strip{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:.9rem}
+.strip label{display:flex;gap:6px;align-items:center;font-weight:700}
+select{min-height:40px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--panel);font-weight:400}
+.note{color:var(--muted);font-size:.85rem}
+.stats{font:700 .78rem var(--f-mono);display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;font-variant-numeric:tabular-nums}
+.stats span{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+
+.drawer{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.drawer>div{display:flex;flex-direction:column;gap:8px;min-width:0}
+.drawer p{margin:0}
+.code{font:700 2.3rem var(--f-mono);letter-spacing:.06em;color:var(--accent)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+input[type=text]{min-height:42px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);min-width:0}
+input.code-in{font-family:var(--f-mono);text-transform:uppercase;width:10em;max-width:100%}
+.err{color:var(--bad);font-size:.88rem;margin:0}
+@media (max-width:640px){.drawer{grid-template-columns:minmax(0,1fr)}}
+
+.stage{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:860px){.stage{grid-template-columns:minmax(0,1fr)}}
+.board,.qpanel{background:var(--panel);border:1px solid var(--line);border-radius:12px;min-width:0}
+.board{padding:10px;display:flex;flex-direction:column;gap:10px}
+.paper{overflow-x:auto;border-radius:8px;background-color:var(--panel);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:20px 20px}
+.paper svg{display:block;width:100%;min-width:300px;height:auto;max-height:64vh;margin:auto}
+.bar{display:flex;flex-wrap:wrap;gap:8px}
+.qpanel{padding:14px;display:flex;flex-direction:column;gap:12px}
+.qhead{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chip{font:700 .72rem var(--f-mono);border:1px solid var(--line);border-radius:6px;padding:2px 7px}
+.stem{margin:0;font-size:1.12rem;line-height:1.4}
+.cond{margin:0;color:var(--muted);font-size:.86rem}
+.ans{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ans input{width:9em;font:700 1.05rem var(--f-mono)}
+.unit{font:700 1rem var(--f-mono)}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:10px;align-items:center;text-align:left;padding:9px 12px;min-height:44px;border:1px solid var(--line);border-radius:8px;background:var(--panel);cursor:pointer;font:700 1rem var(--f-mono);width:100%}
+.opt b{color:var(--accent);font-family:var(--f-display)}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.ok{background:var(--good-bg);border-color:var(--good)}
+.opt.no{background:var(--bad-bg);border-color:var(--bad)}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:.92rem}
+th,td{padding:5px 6px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font-size:.8rem;color:var(--muted)}
+td input[type=text]{width:4.6em;min-height:36px;padding:4px 6px;font:500 .92rem var(--f-mono)}
+td input.ok{background:var(--good-bg);border-color:var(--good)}
+td input.no{background:var(--bad-bg);border-color:var(--bad)}
+.pred{display:grid;gap:8px}
+.pred .pr{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;justify-content:space-between}
+.pred .lb{font-weight:700;min-width:7em}
+.pred .seg button{font-size:.82rem;padding:6px 9px}
+.seg button.ok{background:var(--good);color:var(--panel)}
+.seg button.no{background:var(--bad);color:var(--panel)}
+.fb{border-radius:8px;padding:9px 12px;font-size:.95rem}
+.fb.good{background:var(--good-bg)}
+.fb.bad{background:var(--bad-bg)}
+.fb.info{background:var(--info-bg)}
+.fb b{font-family:var(--f-display)}
+.hints{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.hints li{background:var(--info-bg);border-radius:8px;padding:7px 11px;font-size:.93rem}
+.checks{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px;font:500 .8rem var(--f-mono)}
+.checks li::before{content:"✓ ";color:var(--good);font-weight:700}
+h3{font-size:.95rem}
+.walk{border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:8px}
+.walk p{margin:0;font-size:1.02rem}
+.prog{font:700 .75rem var(--f-mono);color:var(--muted)}
+.timer{font:700 1.5rem var(--f-mono);color:var(--accent);font-variant-numeric:tabular-nums}
+.timer.up{color:var(--bad)}
+.sl{display:grid;grid-template-columns:5.2em minmax(0,1fr) 4.2em;align-items:center;gap:8px;font-size:.92rem}
+.sl b{font-family:var(--f-mono);font-size:.85rem}
+.sl output{font:700 .85rem var(--f-mono);text-align:right}
+.sl input{width:100%;min-height:30px;accent-color:var(--accent)}
+details{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:.92rem}
+summary{cursor:pointer;font-weight:700}
+.gloss{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:4px 16px;margin-top:8px}
+
+/* circuit drawing */
+.w{stroke:var(--wire);stroke-width:2;fill:none;stroke-linecap:round}
+.sym{stroke:var(--wire);stroke-width:2;fill:var(--panel)}
+.t{font:700 13px var(--f-body);fill:var(--ink);text-anchor:middle}
+.tv{font:500 11.5px var(--f-mono);fill:var(--muted);text-anchor:middle}
+.tr{font:700 11.5px var(--f-mono);fill:var(--flow);text-anchor:middle}
+.tm{font:700 13px var(--f-mono);fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+.dot{fill:var(--wire)}
+.hlr{fill:var(--hl);stroke:var(--hl-line);stroke-width:1.5;stroke-dasharray:5 3}
+.eqbox{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2}
+.swh{cursor:pointer}
+.swh rect{fill:transparent}
+.flow{stroke:var(--flow);stroke-width:3;stroke-linecap:round;stroke-dasharray:1 15;fill:none}
+.ibox{fill:none;stroke:var(--muted);stroke-width:1.2;stroke-dasharray:4 3}
+@media (prefers-reduced-motion:no-preference){
+  .flow{animation:fl var(--d,1.5s) linear infinite}
+  @keyframes fl{to{stroke-dashoffset:-16}}
+  .paper:not(.live) svg{animation:fade .28s ease-out}
+  @keyframes fade{from{opacity:.25}to{opacity:1}}
+}
+
+/* projector */
+html.proj{font-size:20px}
+html.proj .wrap{max-width:none}
+html.proj .paper svg{max-height:70vh;max-width:none!important}
+html.proj .stage{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
+html.proj .levels,html.proj .strip label,html.proj details{display:none}
+html.proj .ansin{display:none}
+@media (max-width:860px){html.proj{font-size:16px}html.proj .stage{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="eyebrow"><a href="./">HKDSE Physics · Simulation Lab</a></p>
+      <h1>Circuit Analysis Lab</h1>
+    </div>
+    <div class="tools">
+      <div class="seg" role="group" aria-label="Mode">
+        <button id="mPractice" aria-pressed="true">Practice</button>
+        <button id="mExplore" aria-pressed="false">Explore</button>
+      </div>
+      <button class="btn" id="bClass" aria-pressed="false">Class set</button>
+      <button class="btn" id="bProj" aria-pressed="false">Projector</button>
+    </div>
+  </header>
+
+  <section class="drawer" id="drawer" hidden aria-label="Class set">
+    <div>
+      <h2>Teacher: create a set</h2>
+      <p class="note">Ten questions from the level and format selected below. Everyone who enters this code gets the same questions in the same order.</p>
+      <div class="row"><button class="btn primary" id="bCreate">Create code</button><span class="code" id="newCode"></span></div>
+    </div>
+    <div>
+      <h2>Student: join a set</h2>
+      <label class="note" for="codeIn">Enter the code on the board.</label>
+      <form class="row" id="fJoin"><input type="text" class="code-in" id="codeIn" placeholder="2X-K7QF" autocomplete="off" aria-label="Class code"><button class="btn" type="submit">Join</button></form>
+      <p class="err" id="codeErr" hidden></p>
+    </div>
+  </section>
+
+  <nav class="levels" id="levels" aria-label="Level"></nav>
+
+  <div class="strip">
+    <label for="fmt">Format
+      <select id="fmt">
+        <option value="X">Mixed</option><option value="V">Find the value</option><option value="R">Find the ratio</option><option value="T">Complete the table</option><option value="M">DSE-style MC</option>
+      </select></label>
+    <span class="note" id="fmtNote"></span>
+    <div class="stats" id="stats" aria-live="polite"></div>
+  </div>
+
+  <main class="stage">
+    <section class="board" aria-label="Circuit">
+      <div class="paper" id="paper"></div>
+      <div class="bar" id="boardBar"></div>
+      <div class="walk" id="walk" hidden aria-live="polite"></div>
+    </section>
+    <aside class="qpanel" id="qpanel"></aside>
+  </main>
+
+  <details>
+    <summary>English–Chinese terms 中英詞彙</summary>
+    <div class="gloss" id="gloss"></div>
+  </details>
+</div>
+
+<script id="core">
+/* ============ Exact fractions, so answers never suffer rounding error ============ */
+const gcdB=(a,b)=>{a=a<0n?-a:a;b=b<0n?-b:b;while(b)[a,b]=[b,a%b];return a};
+class Fr{
+  constructor(n,d=1n){n=BigInt(n);d=BigInt(d);if(d<0n){n=-n;d=-d}const g=gcdB(n,d)||1n;this.n=n/g;this.d=d/g}
+  add(o){return new Fr(this.n*o.d+o.n*this.d,this.d*o.d)}
+  sub(o){return new Fr(this.n*o.d-o.n*this.d,this.d*o.d)}
+  mul(o){return new Fr(this.n*o.n,this.d*o.d)}
+  div(o){return new Fr(this.n*o.d,this.d*o.n)}
+  eq(o){return this.n===o.n&&this.d===o.d}
+  cmp(o){const x=this.n*o.d-o.n*this.d;return x<0n?-1:x>0n?1:0}
+  get zero(){return this.n===0n}
+  get v(){return Number(this.n)/Number(this.d)}
+}
+const F=x=>new Fr(Math.round(x*100),100);
+const ZERO=F(0),ONE=F(1);
+
+/* ============ Seeded random numbers, so a class code gives everyone the same set ============ */
+const seeded=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const hashStr=s=>{let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0};
+const pick=(r,a)=>a[Math.floor(r()*a.length)];
+const shuffle=(r,a)=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const SUB='₀₁₂₃₄₅₆₇₈₉';
+const sub=n=>String(n).split('').map(d=>SUB[d]).join('');
+
+/* ============ Circuit tree: L load, A ammeter, W switch, S series, P parallel ============ */
+let NID=0;
+function build(spec,labelFn){
+  let k=0;
+  const go=s=>{
+    if(s==='x'){k++;return{t:'L',id:++NID,kind:'R',num:k,label:labelFn(k),R:ONE}}
+    if(s==='A')return{t:'A',id:++NID,label:'A'};
+    if(s==='so'||s==='sc')return{t:'W',id:++NID,label:'S',closed:s==='sc'};
+    return{t:s[0],id:++NID,kids:s.slice(1).map(go)};
+  };
+  return go(spec);
+}
+const clone=n=>{if(!n)return n;const c={...n};if(n.kids)c.kids=n.kids.map(clone);return c};
+const walk=(n,f)=>{f(n);(n.kids||[]).forEach(k=>walk(k,f))};
+const allNodes=n=>{const a=[];walk(n,x=>a.push(x));return a};
+const loads=n=>allNodes(n).filter(x=>x.t==='L');
+const findId=(n,id)=>allNodes(n).find(x=>x.id===id);
+
+function eff(n){
+  if(n.t==='L'){n._R=n.R}
+  else if(n.t==='A'){n._R=ZERO}
+  else if(n.t==='W'){n._R=n.closed?ZERO:null}
+  else{
+    n.kids.forEach(eff);
+    if(n.t==='S'){n._R=n.kids.some(k=>k._R===null)?null:n.kids.reduce((s,k)=>s.add(k._R),ZERO)}
+    else{
+      const on=n.kids.filter(k=>k._R!==null);
+      if(!on.length)n._R=null;
+      else if(on.some(k=>k._R.zero))n._R=ZERO;
+      else n._R=ONE.div(on.reduce((s,k)=>s.add(ONE.div(k._R)),ZERO));
+    }
+  }
+}
+function share(n,V,I){
+  n.V=V;n.I=I;
+  if(n.t==='L'||n.t==='A'||n.t==='W'){n.P=V.mul(I);return}
+  if(n.t==='S'){
+    if(n._R===null)n.kids.forEach(k=>share(k,k._R===null?V:ZERO,ZERO));
+    else n.kids.forEach(k=>share(k,I.mul(k._R),I));
+  }else{
+    const shorts=n.kids.filter(k=>k._R!==null&&k._R.zero);
+    if(shorts.length){let first=true;n.kids.forEach(k=>{const isS=k._R!==null&&k._R.zero;share(k,ZERO,isS&&first?I:ZERO);if(isS)first=false})}
+    else n.kids.forEach(k=>share(k,V,k._R===null?ZERO:V.div(k._R)));
+  }
+}
+/* Solves the whole circuit and stores V, I and P on every node. */
+function solve(c){
+  eff(c.tree);
+  const r=c.r||ZERO;
+  c.short=false;
+  if(c.tree._R===null){c.It=ZERO;c.Rt=null}
+  else{
+    const tot=c.tree._R.add(r);
+    c.Rt=c.tree._R;
+    if(tot.zero){c.short=true;c.It=ZERO}else c.It=c.emf.div(tot);
+  }
+  c.Vt=c.emf.sub(c.It.mul(r));
+  share(c.tree,c.Vt,c.It);
+  return c;
+}
+/* Removes ideal meters and switches so only the loads remain. */
+function strip(n){
+  if(n.t==='L'){const c=clone(n);delete c.vm;return c}
+  if(n.t==='A')return'wire';
+  if(n.t==='W')return n.closed?'wire':'open';
+  const ks=n.kids.map(strip);
+  if(n.t==='S'){
+    if(ks.includes('open'))return'open';
+    const f=ks.filter(k=>k!=='wire');
+    if(!f.length)return'wire';
+    if(f.length===1)return f[0];
+    return{t:'S',id:n.id,kids:f.flatMap(k=>k.t==='S'?k.kids:[k])};
+  }
+  const f=ks.filter(k=>k!=='open');
+  if(f.includes('wire'))return'wire';
+  if(!f.length)return'open';
+  if(f.length===1)return f[0];
+  return{t:'P',id:n.id,kids:f};
+}
+const expr=n=>{
+  if(n.t==='L')return n.label;
+  return n.kids.map(k=>k.t==='L'||k.t===n.t?expr(k):'('+expr(k)+')').join(n.t==='S'?' + ':' ∥ ');
+};
+
+/* ============ Number and symbol formatting ============ */
+const num=x=>{const s=(+x.toFixed(2)).toString();return s};
+const co=(f,top,bot)=>{const n=f.n.toString(),d=f.d.toString();if(f.zero)return'0';
+  return (n==='1'&&top?'':n)+(top||'')+(d==='1'&&!bot?'':'/'+(d==='1'?'':d)+(bot||''))};
+const fmtR=(f,s)=>s?co(f,'R',''):num(f.v)+' Ω';
+const fmtV=(f,s)=>s?co(f,'V',''):num(f.v)+' V';
+const fmtI=(f,s)=>s?co(f,'V','R'):num(f.v)+' A';
+const fmtP=(f,s)=>s?co(f,'V²','R'):num(f.v)+' W';
+function intRatio(frs){
+  let l=1n;frs.forEach(f=>{l=l*f.d/gcdB(l,f.d)});
+  let ints=frs.map(f=>f.n*l/f.d);
+  const g=ints.reduce((a,b)=>gcdB(a,b),0n)||1n;
+  return ints.map(x=>Number(x/g));
+}
+const parseNum=s=>{
+  s=String(s).trim().replace(/[Ωa-zA-Z\s]+$/,'').trim();
+  if(!s)return null;
+  const m=s.match(/^(-?\d*\.?\d+)\s*\/\s*(\d*\.?\d+)$/);
+  if(m){const d=parseFloat(m[2]);return d?parseFloat(m[1])/d:null}
+  return /^-?\d*\.?\d+$/.test(s)?parseFloat(s):null;
+};
+const near=(a,b,tol=.02)=>Math.abs(b)<.005?Math.abs(a)<.005:Math.abs(a-b)<=tol*Math.abs(b)+1e-9;
+const ratioEq=(a,b)=>a.length===b.length&&a.every(x=>x>0)&&a.every((x,i)=>near(x/a[0],b[i]/b[0]));
+
+/* ============ Circuit generator ============ */
+const TEMPLATES={
+  1:[['S','x','x'],['S','x','x','x'],['P','x','x'],['P','x','x','x']],
+  2:[['S','x',['P','x','x']],['P',['S','x','x'],'x'],['S','x',['P','x','x'],'x'],['S',['P','x','x'],'x']],
+  3:[['S','x',['P',['S','x','x'],'x']],['P',['S','x',['P','x','x']],'x'],['S',['P','x','x'],['P','x','x']],['S','x',['P','x',['S','x',['P','x','x']]]],['P',['S','x','x'],['S','x','x']]],
+  4:[['S','x','x','x'],['P','x','x','x'],['S','x',['P','x','x']],['P',['S','x','x'],'x'],['S',['P','x','x'],['P','x','x']],['S','x',['P',['S','x','x'],'x']],['P',['S','x','x'],['S','x','x']]],
+  6:[['S','x'],['S','x','x'],['P','x','x'],['S','x',['P','x','x']],['P',['S','x','x'],'x']]
+};
+const RVALS=[1,2,3,4,5,6,8,10,12,15,20,24,30];
+const EMFS=[1.5,3,4.5,6,9,12,15,18,20,24,30,36];
+const dp2=f=>{const x=f.mul(F(100));return x.d===1n};
+function isClean(c){
+  if(!dp2(c.It)||!c.Rt||!dp2(c.Rt))return false;
+  return loads(c.tree).every(l=>dp2(l.V)&&dp2(l.I)&&dp2(l.P));
+}
+function makeCircuit(level,r,style){
+  const bulb=style==='B';
+  const label=k=>bulb?'B'+sub(k):'R'+sub(k);
+  for(let tryN=0;tryN<3000;tryN++){
+    const spec=pick(r,TEMPLATES[level]);
+    const tree=build(spec,label);
+    const ls=loads(tree);
+    const rs=ls.map(()=>pick(r,RVALS));
+    if(new Set(rs).size<2)continue;
+    ls.forEach((l,i)=>{l.R=F(rs[i]);l.kind=bulb?'B':'R'});
+    const c={tree,emf:F(pick(r,EMFS)),r:null,level,bulb};
+    if(level===6)c.r=F(pick(r,[.5,1,1.5,2]));
+    solve(c);
+    if(!c.It.zero&&isClean(c)&&c.It.v<=30)return c;
+  }
+  throw new Error('no clean circuit');
+}
+function makeSym(r,identical){
+  const LBL='XYZUW';
+  for(let t=0;t<2000;t++){
+    const spec=pick(r,TEMPLATES[4]);
+    const tree=build(spec,k=>identical?LBL[k-1]:'R'+sub(k));
+    const ls=loads(tree);
+    ls.forEach(l=>{l.R=identical?ONE:F(pick(r,[1,1,2,3,4,6]));l.kind=identical?'B':'R'});
+    if(!identical&&new Set(ls.map(l=>l.R.v)).size<2)continue;
+    const c={tree,emf:ONE,r:null,level:4,sym:true,identical};
+    solve(c);
+    if(Math.max(...intRatio(ls.map(l=>l.P)))<=48&&Math.max(...intRatio(ls.map(l=>l.I)))<=24&&Math.max(...intRatio(ls.map(l=>l.V)))<=24)return c;
+  }
+  throw new Error('no sym circuit');
+}
+function decorate(c,r){
+  const t=c.tree;
+  if(r()<.65){
+    const a={t:'A',id:++NID,label:'A'};
+    if(t.t==='S')t.kids.unshift(a);else c.tree={t:'S',id:++NID,kids:[a,t]};
+  }
+  const ps=allNodes(c.tree).filter(n=>n.t==='P');
+  if(ps.length&&r()<.5){
+    const p=pick(r,ps),i=Math.floor(r()*p.kids.length),k=p.kids[i],a={t:'A',id:++NID,label:'A'};
+    if(k.t==='S')k.kids.unshift(a);else p.kids[i]={t:'S',id:++NID,kids:[a,k]};
+  }
+  const am=allNodes(c.tree).filter(n=>n.t==='A');
+  am.forEach((a,i)=>a.label=am.length>1?'A'+sub(i+1):'A');
+  if(r()<.6){
+    const opts=[...loads(c.tree),...allNodes(c.tree).filter(n=>n.t==='P')];
+    pick(r,opts).vm='V';
+  }
+  return solve(c);
+}
+
+/* ============ Question builders ============ */
+const COND_IDEAL='Ideal meters. The cell has negligible internal resistance.';
+const QTY={I:{w:'current through',f:fmtI,u:'A',k:'I',sym:'I'},V:{w:'p.d. across',f:fmtV,u:'V',k:'V',sym:'V'},P:{w:'power dissipated by',f:fmtP,u:'W',k:'P',sym:'P'}};
+const addMistake=(arr,val,msg)=>{arr.push({val:val instanceof Fr?val.v:val,msg})};
+const cleanM=(ms,a)=>{const out=[];ms.forEach(m=>{if(!near(m.val,a)&&!out.some(o=>near(o.val,m.val))&&isFinite(m.val)&&m.val>0)out.push(m)});return out};
+
+function structHint(c){
+  const s=strip(c.tree);
+  return `Read the circuit first. Treat ideal ammeters as wires and leave out ideal voltmeters. The loads connect as: ${expr(s)}`+(c.r?`, in series with the internal resistance r.`:'.');
+}
+function firstStepHint(c){
+  const s=c.sym;
+  const rt=c.r?`R(external) = ${fmtR(c.Rt,s)}, and adding r gives ${fmtR(c.Rt.add(c.r),s)}`:`Total resistance = ${fmtR(c.Rt,s)}`;
+  return `${rt}. So the current from the cell is ${fmtV(c.emf,s)} ÷ ${fmtR(c.Rt.add(c.r||ZERO),s)} = ${fmtI(c.It,s)}.`;
+}
+const FORMULA={
+  I:'Series: every part carries the same current. Parallel: V is shared equally, and each branch carries I = V / R.',
+  V:'Find the current through this part, then use V = IR. Series parts share the p.d. in proportion to R. Parallel branches have equal p.d.',
+  P:'Use P = VI, P = I²R or P = V²/R, with the values for this component only.',
+  R:'Series: R = R₁ + R₂. Parallel: 1/R = 1/R₁ + 1/R₂. Work from the innermost group outwards.'
+};
+function loadMistakes(c,l,qk){
+  const ms=[],emf=c.emf,It=c.It,R=l.R;
+  const sumR=loads(c.tree).reduce((s,x)=>s.add(x.R),ZERO);
+  if(qk==='I'){
+    addMistake(ms,emf.div(R),`That uses the full supply p.d. across ${l.label}. Only ${fmtV(l.V)} is across it, so work out its share first.`);
+    addMistake(ms,It,`That is the current from the cell. Check whether ${l.label} is on a branch that takes only part of it.`);
+    addMistake(ms,emf.div(sumR),`That treats every component as being in series. Look for the parallel branches first.`);
+  }else if(qk==='V'){
+    addMistake(ms,emf,`That is the p.d. of the whole cell. Other components also take a share, so ${l.label} gets less.`);
+    addMistake(ms,It.mul(R),`That uses the total current through ${l.label}. It carries only ${fmtI(l.I)} because the current splits.`);
+    addMistake(ms,emf.mul(R).div(sumR),`That shares the p.d. as if every component were in series. Combine the parallel parts first.`);
+  }else{
+    addMistake(ms,emf.mul(emf).div(R),`That puts the full supply p.d. in P = V²/R. Use the p.d. across ${l.label} only, which is ${fmtV(l.V)}.`);
+    addMistake(ms,It.mul(It).mul(R),`That puts the total current in P = I²R. Use the current through ${l.label} only, which is ${fmtI(l.I)}.`);
+    addMistake(ms,l.I.mul(R),`I × R gives the p.d., not the power. Power needs I²R.`);
+    addMistake(ms,l.V.div(R),`V ÷ R gives the current, not the power. Power needs V²/R.`);
+    addMistake(ms,l.V.mul(It),`That multiplies this component's p.d. by the total current. Use the current through ${l.label} only.`);
+  }
+  return ms;
+}
+function valueQ(c,r){
+  const ls=loads(c.tree),meters=allNodes(c.tree).filter(n=>n.t==='A'||n.vm);
+  const roll=r();
+  if(roll<.16){
+    const sumR=ls.reduce((s,x)=>s.add(x.R),ZERO),inv=ONE.div(c.Rt),ms=[];
+    addMistake(ms,sumR,`That adds every resistance as if all were in series. Parallel groups have a smaller combined resistance.`);
+    addMistake(ms,inv,`That is 1/R. Remember to take the reciprocal at the end of the parallel calculation.`);
+    return{kind:'num',skill:'Equivalent resistance',stem:'Find the equivalent resistance of the external circuit.',ans:c.Rt.v,unit:'Ω',ansText:fmtR(c.Rt),mistakes:cleanM(ms,c.Rt.v),hints:[structHint(c),FORMULA.R,`Start with the innermost group of ${expr(strip(c.tree))}.`]};
+  }
+  if(meters.length&&roll<.4){
+    const m=pick(r,meters);
+    if(m.t==='A'&&(r()<.5||!m.vm)){
+      const ms=[];addMistake(ms,c.emf.div(c.Rt.add(c.r||ZERO)).mul(F(2)),'Check how the current splits at each junction.');
+      addMistake(ms,c.It,`That is the current from the cell. Check how much of it passes through ${m.label}.`);
+      return{kind:'num',skill:'Meter reading',stem:`Find the reading of ammeter ${m.label}.`,ans:m.I.v,unit:'A',ansText:fmtI(m.I),mistakes:cleanM(ms,m.I.v),hints:[structHint(c),FORMULA.I,firstStepHint(c)]};
+    }
+    if(m.vm){
+      const ms=[];addMistake(ms,c.emf,`That is the p.d. of the cell. The voltmeter reads only across the part it is connected to.`);
+      return{kind:'num',skill:'Meter reading',stem:`Find the reading of voltmeter V.`,ans:m.V.v,unit:'V',ansText:fmtV(m.V),mistakes:cleanM(ms,m.V.v),hints:[structHint(c),FORMULA.V,firstStepHint(c)]};
+    }
+  }
+  const l=pick(r,ls),qk=pick(r,['I','V','P']),Q=QTY[qk],a=l[qk];
+  return{kind:'num',skill:{I:'Current',V:'Potential difference',P:'Power'}[qk],stem:`Find the ${Q.w} ${l.label}.`,ans:a.v,unit:Q.u,ansText:Q.f(a),mistakes:cleanM(loadMistakes(c,l,qk),a.v),hints:[structHint(c),FORMULA[qk],firstStepHint(c)]};
+}
+function ratioMsgs(ls,qk,ans){
+  const ms=[],rs=ls.map(l=>l.R.v),inv=intRatio(ls.map(l=>ONE.div(l.R)));
+  const eq=(a,b)=>ratioEq(a,b);
+  const seriesLike=qk==='I'?'current':'p.d.';
+  const add=(arr,msg)=>{if(!eq(arr,ans)&&!ms.some(m=>eq(m.val,arr)))ms.push({val:arr,msg})};
+  add(intRatio(ls.map(l=>l.R)),'That is the ratio of the resistances. It matches only when the components share the same current and you are comparing V or P.');
+  add(inv,'That is the inverse ratio of the resistances. It matches only when the components share the same p.d. and you are comparing I or P.');
+  add(ls.map(()=>1),`The ${seriesLike} is equal only if the components are ${qk==='I'?'in series':'in parallel'}. Check how they are connected here.`);
+  const flip=intRatio(ls.map(l=>ONE.div(l[qk])));
+  add(flip,'That ratio is upside down. Check which component takes the larger share.');
+  if(qk==='P'){
+    add(intRatio(ls.map(l=>l.I)),'That is the current ratio. Power also depends on the p.d. across each component.');
+    add(intRatio(ls.map(l=>l.V)),'That is the p.d. ratio. Power also depends on the current through each component.');
+  }
+  return ms;
+}
+const RATIOHINT='Series: same I, so V ∝ R and P ∝ R. Parallel: same V, so I ∝ 1/R and P ∝ 1/R. In mixed circuits, compare one group at a time.';
+function ratioQ(c,r){
+  const ls=shuffle(r,loads(c.tree));
+  const n=ls.length>=3&&r()<.4?3:2;
+  for(let i=0;i<20;i++){
+    const chosen=shuffle(r,ls).slice(0,n).sort((a,b)=>a.num-b.num),qk=pick(r,['I','V','P']);
+    const ans=intRatio(chosen.map(l=>l[qk]));
+    if(Math.max(...ans)>20||chosen.some(l=>l[qk].zero))continue;
+    if(i<15&&new Set(ans).size===1)continue;
+    const sym=qk,word={I:'currents',V:'p.d.s',P:'powers dissipated'}[qk];
+    return{kind:'ratio',skill:'Ratio',stem:`Find the ratio of the ${word}, ${chosen.map(l=>`${sym}(${l.label})`).join(' : ')}.`,ans,ansText:ans.join(' : '),n,mistakes:ratioMsgs(chosen,qk,ans),hints:[structHint(c),RATIOHINT,c.sym?`Set a value, such as R = 1 and V = 1, then find each ${sym} in turn.`:firstStepHint(c)]};
+  }
+  return valueQ(c,r);
+}
+function tableQ(c){
+  const rows=loads(c.tree).map(l=>({label:l.label,R:l.R,V:l.V,I:l.I,P:l.P}));
+  return{kind:'table',skill:'Whole circuit',stem:'Complete the table for every component.',rows,ansText:'See the completed table.',hints:[structHint(c),'Find the total resistance, then the total current. Work back through each group to get V and I. Finish with P = VI.',firstStepHint(c)]};
+}
+function fillNums(r,a){
+  const out=[];
+  [2,.5,1.5,3,.75,.25,1.25,4,.6,1.2].forEach(k=>{const v=+(a*k).toFixed(2);if(v>0&&!near(v,a,.03))out.push(v)});
+  return shuffle(r,out);
+}
+function fillRatios(r,a){
+  const out=[[...a].reverse()];
+  if(a.length===3)out.push([a[1],a[0],a[2]],[a[0],a[2],a[1]],[a[2],a[0],a[1]]);
+  out.push(a.map((x,i)=>i?x+1:x),a.map((x,i)=>i?x:x+1),a.map((x,i)=>i?x*2:x),a.map(x=>x*x),a.map(()=>1),a.map((x,i)=>i?x:x*3));
+  return out;
+}
+function toMC(q,r,c){
+  const opts=[];
+  if(q.kind==='ratio'){
+    const norm=x=>{const g=x.reduce((p,n)=>{let a=p,b=n;while(b)[a,b]=[b,a%b];return a},0)||1;return x.map(n=>n/g)};
+    const seen=[q.ans];
+    opts.push({text:q.ans.join(' : '),ok:true});
+    q.mistakes.forEach(m=>{const v=norm(m.val.map(x=>Math.round(x)));if(opts.length<4&&m.val.every(Number.isInteger)&&!seen.some(s=>ratioEq(s,v))){seen.push(v);opts.push({text:v.join(' : '),msg:m.msg})}});
+    fillRatios(r,q.ans).forEach(raw=>{const v=norm(raw);if(opts.length<4&&!seen.some(s=>ratioEq(s,v))){seen.push(v);opts.push({text:v.join(' : ')})}});
+  }else{
+    const seen=[q.ans];
+    const u=q.fmtv||(x=>num(x)+' '+q.unit);
+    opts.push({text:q.ansText,ok:true});
+    q.mistakes.forEach(m=>{if(opts.length<4&&!seen.some(s=>near(s,m.val,.03))){seen.push(m.val);opts.push({text:u(m.val),msg:m.msg})}});
+    fillNums(r,q.ans).forEach(v=>{if(opts.length<4&&!seen.some(s=>near(s,v,.03))){seen.push(v);opts.push({text:u(v)})}});
+  }
+  return{...q,kind:'mc',options:shuffle(r,opts)};
+}
+/* Level 4: reasoning with R and V */
+function rankStr(ls){
+  const sorted=[...ls].sort((a,b)=>b.P.cmp(a.P)||a.num-b.num);
+  let s=sorted[0].label;
+  for(let i=1;i<sorted.length;i++)s+=(sorted[i].P.eq(sorted[i-1].P)?' = ':' > ')+sorted[i].label;
+  return s;
+}
+function rankQ(c,r){
+  const ls=loads(c.tree),right=rankStr(ls),labels=ls.map(l=>l.label);
+  const opts=[{text:right,ok:true}],seen=new Set([right]);
+  const add=(t,msg)=>{if(opts.length<4&&!seen.has(t)){seen.add(t);opts.push({text:t,msg})}};
+  add(labels.join(' = '),'Identical bulbs are equally bright only if each has the same p.d. and current. Check how the current splits.');
+  add(labels.join(' > '),'Being nearer the cell does not matter. Brightness depends only on the power of each bulb.');
+  add([...labels].reverse().join(' > '),'Compare the current through each bulb. Current splits at a junction and is not used up in a bulb.');
+  for(let i=0;i<40&&opts.length<4;i++){
+    const p=shuffle(r,labels);let t=p[0];
+    for(let k=1;k<p.length;k++)t+=(r()<.3?' = ':' > ')+p[k];
+    add(t,null);
+  }
+  return{kind:'mc',skill:'Brightness',stem:`All the bulbs are identical. Which correctly ranks the bulbs from brightest to dimmest?`,options:shuffle(r,opts),ansText:right,hints:[structHint(c),'Brightness depends on power. For identical bulbs, P = I²R, so the bulb with the largest current is the brightest.','Find how the cell current splits at each junction, using a value such as I = 1 for the total if that helps.']};
+}
+function symReqQ(c,r){
+  const a=c.Rt,sumR=loads(c.tree).reduce((s,x)=>s.add(x.R),ZERO);
+  const opts=[{text:fmtR(a,true),ok:true}],seen=[a.v];
+  const add=(f,msg)=>{if(opts.length<4&&!seen.some(s=>near(s,f.v))){seen.push(f.v);opts.push({text:fmtR(f,true),msg})}};
+  add(sumR,'That adds every resistance as if all were in series.');
+  add(ONE.div(a),'That is the reciprocal. Check the units: the answer must be a resistance.');
+  [F(2),F(.5),F(1.5),F(3),F(.75)].forEach(k=>add(a.mul(k)));
+  return{kind:'mc',skill:'Equivalent resistance',stem:'Find the equivalent resistance of the circuit in terms of R.',options:shuffle(r,opts),ansText:fmtR(a,true),hints:[structHint(c),FORMULA.R,`Start with the innermost group of ${expr(strip(c.tree))}.`]};
+}
+/* Level 5: predict the change */
+const PRED=[
+  {spec:['S','A','x',['P','x',['S','so','x']]],act:'closed',vm:1},
+  {spec:['S','A','x',['P','x','so']],act:'closed',vm:1},
+  {spec:['S','A',['P','x',['S','so','x']]],act:'closed',vm:0},
+  {spec:['S','A','x',['P','x',['S','sc','x']]],act:'opened',vm:0},
+  {spec:['S','A',['P',['S','x','x'],['S','so','x']]],act:'closed',vm:0},
+  {spec:['S','A',['P','x',['S','x',['P','x','so']]]],act:'closed',vm:1},
+  {spec:['S','A','x',['P','x','sc']],act:'opened',vm:1},
+  {spec:['S','A','x',['P',['S','x','so'],'x','x']],act:'closed',vm:2}
+];
+const WD={up:'Increases',down:'Decreases',same:'No change'};
+const dirOf=(a,b)=>{const k=b.cmp(a);return k>0?'up':k<0?'down':'same'};
+function predictQ(r){
+  const t=pick(r,PRED),LBL='XYZUW';
+  const tree=build(t.spec,k=>LBL[k-1]);
+  loads(tree).forEach(l=>{l.kind='B';l.R=ONE});
+  const ls=loads(tree);
+  if(t.vm)ls[t.vm-1].vm='V';
+  const c={tree,emf:ONE,r:null,level:5,sym:true,identical:true,hideEmf:true};
+  solve(c);
+  const after={...c,tree:clone(tree)};
+  allNodes(after.tree).filter(n=>n.t==='W').forEach(w=>w.closed=!w.closed);
+  solve(after);
+  const items=[];
+  const fB=id=>findId(after.tree,id);
+  allNodes(tree).filter(n=>n.t==='A').forEach(a=>items.push({label:`Reading of ${a.label}`,a:a.I,b:fB(a.id).I,dir:dirOf(a.I,fB(a.id).I),q:'I'}));
+  allNodes(tree).filter(n=>n.vm).forEach(n=>items.push({label:'Reading of V',a:n.V,b:fB(n.id).V,dir:dirOf(n.V,fB(n.id).V),q:'V'}));
+  ls.forEach(l=>items.push({label:`Brightness of ${l.label}`,a:l.P,b:fB(l.id).P,dir:dirOf(l.P,fB(l.id).P),q:'P',p:l.label}));
+  const rows=items.map(i=>({...i,why:`${i.label}: ${({I:fmtI,V:fmtV,P:fmtP})[i.q](i.a,true)} → ${({I:fmtI,V:fmtV,P:fmtP})[i.q](i.b,true)}`}));
+  return{kind:'predict',skill:'Effect of a change',c,after,act:t.act,
+    stem:`All the bulbs are identical. The switch S is ${t.act}. How does each quantity change?`,
+    cond:'Ideal meters. The cell has negligible internal resistance, so its p.d. V stays fixed. Each bulb has constant resistance R.',
+    items:rows,ansText:rows.map(i=>`${i.label}: ${WD[i.dir]}`).join('; '),
+    hints:['Draw the circuit again for the new switch position. A closed switch across a bulb short-circuits it. An open switch removes its branch.','Find the new total resistance first. The total current is V ÷ R(total), because the cell p.d. is fixed.','Then find the p.d. across each group. A bulb directly across the ideal cell always has the full p.d., so it does not change.']};
+}
+/* Level 6: internal resistance */
+function internalQ(c,r){
+  const E=c.emf,rr=c.r,It=c.It,Vt=c.Vt,R=c.Rt;
+  c.termV=true;
+  const kind=pick(r,['I','tv','lost','pr','find','short','pext']);
+  const h1=structHint(c);
+  const ms=[];
+  const base={skill:'Internal resistance',cond:'Ideal meters. The voltmeter is connected across the terminals of the cell.'};
+  const mk=(stem,a,unit,h2,final)=>({...base,kind:'num',stem,ans:a.v,unit,ansText:num(a.v)+' '+unit,mistakes:cleanM(ms,a.v),hints:[h1,h2,firstStepHint(c)],finalText:final});
+  if(kind==='I'){
+    addMistake(ms,E.div(R),'That leaves out the internal resistance. Use I = ε / (R + r).');
+    addMistake(ms,E.div(rr),'That uses only the internal resistance. That is the short-circuit current.');
+    return mk('Find the current through the cell.',It,'A','ε = I(R + r), where R is the external resistance.',`I = ε / (R + r) = ${num(E.v)} / (${num(R.v)} + ${num(rr.v)}) = ${fmtI(It)}.`);
+  }
+  if(kind==='tv'){
+    addMistake(ms,E,'The terminal p.d. equals the e.m.f. only when no current flows. Here some p.d. is lost across r.');
+    addMistake(ms,It.mul(rr),'That is the lost p.d. across r. The terminal p.d. is what remains of the e.m.f.');
+    return mk('Find the reading of the voltmeter.',Vt,'V','Terminal p.d. V = ε − Ir.',`V = ε − Ir = ${num(E.v)} − ${num(It.v)} × ${num(rr.v)} = ${fmtV(Vt)}.`);
+  }
+  if(kind==='lost'){
+    const lost=It.mul(rr);
+    addMistake(ms,Vt,'That is the terminal p.d. The lost p.d. is the part across r.');
+    addMistake(ms,E,'That is the e.m.f. Only part of it is lost across r.');
+    return mk('Find the p.d. lost across the internal resistance.',lost,'V','Lost p.d. = Ir.',`Lost p.d. = Ir = ${num(It.v)} × ${num(rr.v)} = ${fmtV(lost)}.`);
+  }
+  if(kind==='pr'){
+    const p=It.mul(It).mul(rr);
+    addMistake(ms,E.mul(It),'That is the total power supplied by the cell. Only part of it is wasted in r.');
+    addMistake(ms,It.mul(rr),'I × r gives the lost p.d., not power. Use P = I²r.');
+    addMistake(ms,Vt.mul(It),'That is the power delivered to the external circuit.');
+    return mk('Find the power wasted in the internal resistance.',p,'W','Power in r = I²r.',`P = I²r = ${num(It.v)}² × ${num(rr.v)} = ${fmtP(p)}.`);
+  }
+  if(kind==='pext'){
+    const p=Vt.mul(It);
+    addMistake(ms,E.mul(It),'That is the total power from the cell, which includes the power wasted in r.');
+    addMistake(ms,It.mul(It).mul(rr),'That is the power wasted in r.');
+    return mk('Find the power delivered to the external circuit.',p,'W','Power delivered = VI, where V is the terminal p.d.',`P = VI = ${num(Vt.v)} × ${num(It.v)} = ${fmtP(p)}.`);
+  }
+  if(kind==='short'){
+    const m=E.div(rr);
+    addMistake(ms,It,'That is the current in this circuit. Short-circuiting removes the external resistance.');
+    addMistake(ms,E.div(R),'A short circuit removes the external resistance, leaving only r.');
+    return mk('The terminals of the cell are then short-circuited by a thick wire. Find the current through the cell.',m,'A','With no external resistance, I = ε / r.',`I = ε / r = ${num(E.v)} / ${num(rr.v)} = ${fmtI(m)}.`);
+  }
+  c.hideR=true;c.hideEmf=true;
+  addMistake(ms,Vt.div(It),'That is V ÷ I, which gives the external resistance.');
+  addMistake(ms,E.div(It),'That is ε ÷ I, which gives R + r.');
+  addMistake(ms,Vt.mul(It),'That multiplies V by I. Use r = (ε − V) / I.');
+  const qr=mk(`With the circuit disconnected, the voltmeter across the cell reads ${fmtV(E)}. With the circuit connected, it reads ${fmtV(Vt)} and the current from the cell is ${fmtI(It)}. Find the internal resistance r.`,rr,'Ω','Lost p.d. = ε − V, and lost p.d. = Ir.',`r = (ε − V) / I = (${num(E.v)} − ${num(Vt.v)}) / ${num(It.v)} = ${fmtR(rr)}.`);
+  qr.hints[2]=`Lost p.d. = ${num(E.v)} − ${num(Vt.v)} = ${num(E.v-Vt.v)} V. Divide this by the current.`;
+  return qr;
+}
+
+/* The main generator. Same level, format and seed always give the same question. */
+function genQuestion(level,fmt,seed){
+  const r=seeded(seed);
+  if(level===0)level=1+Math.floor(r()*6);
+  let q,c;
+  if(level===5){q=predictQ(r);c=q.c}
+  else if(level===4){
+    const roll=r();
+    let want=fmt==='V'?'req':fmt==='R'||fmt==='T'?'ratio':fmt==='M'?(roll<.55?'mcr':roll<.8?'rank':'req'):(roll<.35?'ratio':roll<.6?'mcr':roll<.85?'rank':'req');
+    c=makeSym(r,want==='rank');
+    if(want==='rank')q=rankQ(c,r);
+    else if(want==='req')q=symReqQ(c,r);
+    else{q=ratioQ(c,r);if(want==='mcr'&&q.kind==='ratio')q=toMC(q,r,c)}
+    q.cond='The cell has negligible internal resistance. V is the p.d. of the cell.';
+  }else if(level===6){
+    c=makeCircuit(6,r,r()<.25?'B':'R');
+    q=internalQ(c,r);
+    if(c.bulb)q.cond+=' Bulb resistance is constant.';
+    if(fmt==='M'||(fmt==='X'&&r()<.3))q=toMC(q,r,c);
+  }else{
+    c=makeCircuit(level,r,r()<.3?'B':'R');
+    decorate(c,r);
+    const roll=r();
+    const kind=fmt==='V'?'v':fmt==='R'?'r':fmt==='T'?'t':fmt==='M'?(roll<.6?'mv':'mr'):(roll<.42?'v':roll<.62?'r':roll<.78?'t':roll<.9?'mv':'mr');
+    if(kind==='t')q=tableQ(c);
+    else if(kind==='r'||kind==='mr'){q=ratioQ(c,r);if(kind==='mr')q=toMC(q,r,c)}
+    else{q=valueQ(c,r);if(kind==='mv')q=toMC(q,r,c)}
+    q.cond=COND_IDEAL+(c.bulb?' Bulb resistance is constant.':'');
+  }
+  q.c=c;q.level=level;
+  q.cond=q.cond||COND_IDEAL;
+  return q;
+}
+
+/* ============ Step-by-step reduction and expansion ============ */
+function findInner(n){
+  if(n.t==='L')return null;
+  for(const k of n.kids){const g=findInner(k);if(g)return g}
+  return n.kids.every(k=>k.t==='L')?n:null;
+}
+function replaceNode(n,id,rep){
+  if(n.id===id)return rep;
+  if(n.kids)n.kids=n.kids.map(k=>replaceNode(k,id,rep));
+  return n;
+}
+function walkthrough(q){
+  if(q.kind==='predict')return predictWalk(q);
+  const c=q.c,s=c.sym,steps=[];
+  const st=(tree,hl,text,values)=>{const x={tree:clone(tree),emf:c.emf,r:c.r,sym:s,identical:c.identical,hideEmf:c.hideEmf,termV:false};solve(x);steps.push({c:x,hl,text,values})};
+  let root=strip(c.tree);
+  const hadExtras=allNodes(c.tree).some(n=>n.t==='A'||n.t==='W'||n.vm);
+  if(hadExtras)st(root,[],'Redraw without the meters. An ideal ammeter acts as a wire, and an ideal voltmeter carries no current.',false);
+  const recs=[];let k=0;
+  while(root.t!=='L'){
+    const g=findInner(root),ks=g.kids;
+    const R=g.t==='S'?ks.reduce((a,x)=>a.add(x.R),ZERO):ONE.div(ks.reduce((a,x)=>a.add(ONE.div(x.R)),ZERO));
+    k++;
+    const lab='Req'+sub(k),eqId=++NID;
+    const names=ks.map(x=>x.label).join(' and ');
+    const calc=g.t==='S'?`${lab} = ${ks.map(x=>fmtR(x.R,s).replace(' Ω','')).join(' + ')} = ${fmtR(R,s)}`
+      :`1/${lab} = ${ks.map(x=>'1/'+(s&&x.R.d===1n&&x.R.n!==1n?'('+fmtR(x.R,s)+')':fmtR(x.R,s).replace(' Ω',''))).join(' + ')}, so ${lab} = ${fmtR(R,s)}`;
+    st(root,[g.id],`${names} are in ${g.t==='S'?'series':'parallel'}. ${calc}.`,false);
+    recs.push({before:clone(root),gid:g.id,type:g.t,lab});
+    root=replaceNode(root,g.id,{t:'L',kind:'E',id:eqId,label:lab,R});
+  }
+  const x={tree:clone(root),emf:c.emf,r:c.r,sym:s};solve(x);
+  const tot=c.r?`${fmtR(x.Rt,s)} + ${fmtR(c.r,s)} (r)`:fmtR(x.Rt,s);
+  steps.push({c:{...x,identical:c.identical},hl:[root.id],values:true,text:`Current from the cell: I = ${fmtV(c.emf,s)} ÷ (${tot}) = ${fmtI(x.It,s)}.`+(c.r?` Terminal p.d. = ${fmtV(x.Vt,s)}.`:'')});
+  recs.reverse().forEach(rec=>{
+    const y={tree:clone(rec.before),emf:c.emf,r:c.r,sym:s,identical:c.identical};solve(y);
+    const g=findId(y.tree,rec.gid);
+    const parts=g.kids.map(kid=>g.t==='S'?`V(${kid.label}) = ${fmtI(g.I,s)} × ${fmtR(kid.R,s)} = ${fmtV(kid.V,s)}`:`I(${kid.label}) = ${fmtV(g.V,s)} ÷ ${fmtR(kid.R,s)} = ${fmtI(kid.I,s)}`);
+    const intro=g.t==='S'?`${rec.lab} splits back into parts in series. Each carries ${fmtI(g.I,s)}.`:`${rec.lab} splits back into parallel branches. Each has ${fmtV(g.V,s)} across it.`;
+    steps.push({c:y,hl:g.kids.map(n=>n.id),values:true,text:`${intro} ${parts.join('; ')}.`});
+  });
+  const fin={...c,tree:clone(c.tree)};solve(fin);
+  steps.push({c:fin,hl:[],values:true,text:(q.finalText?q.finalText+' ':'')+`Answer: ${q.ansText}`});
+  return steps;
+}
+function predictWalk(q){
+  const a=q.c,b=q.after,s=true;
+  const A={...a,tree:clone(a.tree)},B={...b,tree:clone(b.tree)};solve(A);solve(B);
+  const rt=x=>x.Rt?fmtR(x.Rt.add(ZERO),s):'open';
+  const steps=[
+    {c:A,hl:[],values:true,text:`Before the change: total resistance ${rt(A)}, and current from the cell ${fmtI(A.It,s)}.`},
+    {c:B,hl:allNodes(B.tree).filter(n=>n.t==='W').map(n=>n.id),values:true,text:`S is ${q.act}. Total resistance is now ${rt(B)}, and current from the cell is ${fmtI(B.It,s)}.`},
+    {c:B,hl:[],values:true,text:q.items.map(i=>`${i.label}: ${WD[i.dir].toLowerCase()}`).join('. ')+'.'}
+  ];
+  return steps;
+}
+/* Conservation checks shown after answering */
+function conservation(c){
+  const s=c.sym,out=[];
+  allNodes(c.tree).filter(n=>n.t==='P').forEach(p=>{
+    const on=p.kids.filter(k=>k.I);
+    out.push(`Junction: ${fmtI(p.I,s)} = ${on.map(k=>fmtI(k.I,s)).join(' + ')}`);
+  });
+  const top=c.tree.t==='S'?c.tree.kids.filter(k=>k.t!=='A'):[c.tree];
+  const vs=top.map(k=>fmtV(k.V,s));
+  if(c.r)vs.push(fmtV(c.It.mul(c.r),s)+' (r)');
+  out.push(`Loop: ${fmtV(c.emf,s)} = ${vs.join(' + ')}`);
+  const ps=loads(c.tree).map(l=>l.P);
+  if(c.r)ps.push(c.It.mul(c.It).mul(c.r));
+  out.push(`Power: cell ${fmtP(c.emf.mul(c.It),s)} = ${ps.map(p=>fmtP(p,s)).join(' + ')}`);
+  return out;
+}
+</script>
+
+<script>
+/* ============ Circuit drawing ============ */
+const SVGW={leaf:78,meter:50,sw:60,stub:20,gap:10,row:14};
+function layout(n,o){
+  let w,up,dn;
+  const vals=o.values;
+  if(n.t==='L'){w=SVGW.leaf;up=30;dn=vals?68:26}
+  else if(n.t==='A'){w=SVGW.meter;up=32;dn=vals?34:18}
+  else if(n.t==='W'){w=SVGW.sw;up=30;dn=12}
+  else if(n.t==='S'){
+    n.kids.forEach(k=>layout(k,o));
+    w=n.kids.reduce((s,k)=>s+k._l.w,0)+SVGW.gap*(n.kids.length-1);
+    up=Math.max(...n.kids.map(k=>k._l.up));dn=Math.max(...n.kids.map(k=>k._l.dn));
+  }else{
+    n.kids.forEach(k=>layout(k,o));
+    w=Math.max(...n.kids.map(k=>k._l.w))+SVGW.stub*2;
+    const h=n.kids.reduce((s,k)=>s+k._l.up+k._l.dn,0)+SVGW.row*(n.kids.length-1);
+    up=h/2;dn=h/2;
+  }
+  const base=up;
+  if(n.vm)up+=vals?54:38;
+  n._l={w,up,dn,base};
+}
+function line(C,x1,y1,x2,y2,I){
+  C.wires.push(`<line class="w" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`);
+  if(C.flow&&I&&!I.zero&&C.It&&!C.It.zero&&(x1!==x2||y1!==y2)){
+    const d=Math.min(6,Math.max(.35,.9*C.It.v/I.v));
+    C.flows.push(`<line class="flow" style="--d:${d.toFixed(2)}s" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`);
+  }
+}
+function draw(n,x,y,W,C){
+  const L=n._l,o=C.o,cx=x+W/2;
+  if(C.hl.includes(n.id))C.bg.push(`<rect class="hlr" x="${x-3}" y="${y-L.base-2}" width="${W+6}" height="${L.base+L.dn+4}" rx="6"/>`);
+  if(n.t==='L'){
+    const hw=n.kind==='B'?14:23;
+    line(C,x,y,cx-hw,y,n.I);line(C,cx+hw,y,x+W,y,n.I);
+    if(n.kind==='B'){
+      const a=(o.values&&C.pmax>0)?Math.min(1,.12+.88*n.P.v/C.pmax):0;
+      C.sym.push(`<circle class="sym" cx="${cx}" cy="${y}" r="13"/>`);
+      if(a>0&&n.P.v>0)C.sym.push(`<circle cx="${cx}" cy="${y}" r="12" fill="var(--lamp)" opacity="${a.toFixed(2)}"/>`);
+      C.sym.push(`<path class="w" d="M${cx-9} ${y-9}L${cx+9} ${y+9}M${cx-9} ${y+9}L${cx+9} ${y-9}"/>`);
+    }else C.sym.push(`<rect class="${n.kind==='E'?'eqbox':'sym'}" x="${cx-23}" y="${y-9}" width="46" height="18" rx="1"/>`);
+    C.text.push(`<text class="t" x="${cx}" y="${y-(n.kind==='B'?18:14)}">${n.label}</text>`);
+    let ty=y+(n.kind==='B'?26:23);
+    if(!(C.c.identical&&n.kind==='B'))C.text.push(`<text class="tv" x="${cx}" y="${ty}">${fmtR(n.R,o.sym)}</text>`);
+    if(o.values){
+      [fmtV(n.V,o.sym),fmtI(n.I,o.sym),fmtP(n.P,o.sym)].forEach((s,i)=>C.text.push(`<text class="tr" x="${cx}" y="${y+(n.kind==='B'?26:23)+14*(i+((C.c.identical&&n.kind==='B')?0:1))}">${s}</text>`));
+    }
+  }else if(n.t==='A'){
+    line(C,x,y,cx-14,y,n.I);line(C,cx+14,y,x+W,y,n.I);
+    C.sym.push(`<circle class="sym" cx="${cx}" cy="${y}" r="14"/>`);
+    C.text.push(`<text class="tm" x="${cx}" y="${y}">A</text>`);
+    if(n.label!=='A')C.text.push(`<text class="t" x="${cx}" y="${y-19}">${n.label}</text>`);
+    if(o.values)C.text.push(`<text class="tr" x="${cx}" y="${y+28}">${fmtI(n.I,o.sym)}</text>`);
+  }else if(n.t==='W'){
+    line(C,x,y,cx-16,y,n.I);line(C,cx+16,y,x+W,y,n.I);
+    const end=n.closed?`${cx+16} ${y}`:`${cx+12} ${y-14}`;
+    const sw=`<circle class="dot" cx="${cx-16}" cy="${y}" r="3"/><circle class="dot" cx="${cx+16}" cy="${y}" r="3"/><path class="w" d="M${cx-16} ${y}L${end}"/><text class="t" x="${cx}" y="${y-19}">${n.label}</text>`;
+    C.sym.push(C.o.toggle?`<g class="swh" data-sw="${n.id}" role="button" aria-label="Toggle switch"><rect x="${cx-26}" y="${y-30}" width="52" height="42"/>${sw}</g>`:sw);
+  }else if(n.t==='S'){
+    const extra=W-L.w,each=extra/n.kids.length;let px=x;
+    n.kids.forEach((k,i)=>{
+      const kw=k._l.w+each;draw(k,px,y,kw,C);px+=kw;
+      if(i<n.kids.length-1){line(C,px,y,px+SVGW.gap,y,n.I);px+=SVGW.gap}
+    });
+  }else{
+    const xl=x+SVGW.stub,xr=x+W-SVGW.stub;
+    line(C,x,y,xl,y,n.I);line(C,xr,y,x+W,y,n.I);
+    let py=y-L.base;
+    const dots=[];
+    n.kids.forEach(k=>{
+      const ky=py+k._l.up;
+      line(C,xl,y,xl,ky,k.I);line(C,xr,ky,xr,y,k.I);
+      draw(k,xl,ky,xr-xl,C);
+      dots.push(ky);py=ky+k._l.dn+SVGW.row;
+    });
+    C.sym.push(`<circle class="dot" cx="${xl}" cy="${y}" r="3"/><circle class="dot" cx="${xr}" cy="${y}" r="3"/>`);
+    dots.forEach(d=>{if(Math.abs(d-y)>1){C.sym.push(`<circle class="dot" cx="${xl}" cy="${d}" r="3"/><circle class="dot" cx="${xr}" cy="${d}" r="3"/>`)}});
+  }
+  if(n.vm){
+    const ty=y-L.base-(o.values?30:20),a=x+12,b=x+W-12;
+    C.wires.push(`<path class="w" d="M${a} ${y}V${ty}H${cx-13}M${cx+13} ${ty}H${b}V${y}"/>`);
+    C.sym.push(`<circle class="dot" cx="${a}" cy="${y}" r="3"/><circle class="dot" cx="${b}" cy="${y}" r="3"/><circle class="sym" cx="${cx}" cy="${ty}" r="13"/>`);
+    C.text.push(`<text class="tm" x="${cx}" y="${ty}">V</text>`);
+    if(o.values)C.text.push(`<text class="tr" x="${cx}" y="${ty-18}">${fmtV(n.V,o.sym)}</text>`);
+  }
+}
+function circuitSVG(c,o={}){
+  const sym=!!c.sym,opts={...o,sym};
+  layout(c.tree,opts);
+  const L=c.tree._l,pad=34;
+  const W=Math.max(L.w,c.r?300:230);
+  const y=L.up+10,yb=y+L.dn+34,x0=pad,x1=pad+W,cx=x0+W/2;
+  const C={o:opts,c,wires:[],flows:[],sym:[],text:[],bg:[],hl:o.hl||[],flow:o.flow,It:c.It,pmax:Math.max(0,...loads(c.tree).map(l=>l.P.v))};
+  draw(c.tree,x0,y,W,C);
+  line(C,x0,yb,x0,y,c.It);line(C,x1,y,x1,yb,c.It);
+  let bottom=yb+40;
+  if(c.r){
+    const cellX=cx-40,rX=cx+34,bl=cx-72,br=cx+74;
+    line(C,x1,yb,br,yb,c.It);line(C,bl,yb,x0,yb,c.It);
+    line(C,br,yb,rX+20,yb);line(C,rX-20,yb,cellX+5,yb);line(C,cellX-5,yb,bl,yb);
+    C.sym.push(`<rect class="ibox" x="${bl}" y="${yb-24}" width="${br-bl}" height="48" rx="4"/>`);
+    C.sym.push(`<path class="w" d="M${cellX-5} ${yb-17}V${yb+17}" style="stroke-width:2.6"/><path class="w" d="M${cellX+5} ${yb-9}V${yb+9}" style="stroke-width:3.4"/>`);
+    C.sym.push(`<rect class="sym" x="${rX-20}" y="${yb-8}" width="40" height="16" rx="1"/>`);
+    C.text.push(`<text class="tv" x="${rX}" y="${yb-12}">r${c.hideR&&!o.values?'':' = '+num(c.r.v)+' Ω'}</text>`);
+    C.text.push(`<text class="tv" x="${cellX}" y="${yb+35}">${c.hideEmf&&!o.values?'ε':'ε = '+num(c.emf.v)+' V'}</text>`);
+    bottom=yb+44;
+    if(c.termV){
+      const vy=yb+62;
+      C.wires.push(`<path class="w" d="M${bl-10} ${yb}V${vy}H${cx-13}M${cx+13} ${vy}H${br+10}V${yb}"/>`);
+      C.sym.push(`<circle class="dot" cx="${bl-10}" cy="${yb}" r="3"/><circle class="dot" cx="${br+10}" cy="${yb}" r="3"/><circle class="sym" cx="${cx}" cy="${vy}" r="13"/>`);
+      C.text.push(`<text class="tm" x="${cx}" y="${vy}">V</text>`);
+      if(o.values)C.text.push(`<text class="tr" x="${cx+50}" y="${vy-4}">${fmtV(c.Vt)}</text>`);
+      bottom=vy+22;
+    }
+  }else{
+    line(C,x1,yb,cx+5,yb,c.It);line(C,cx-5,yb,x0,yb,c.It);
+    C.sym.push(`<path class="w" d="M${cx-5} ${yb-17}V${yb+17}" style="stroke-width:2.6"/><path class="w" d="M${cx+5} ${yb-9}V${yb+9}" style="stroke-width:3.4"/>`);
+    if(!c.hideEmf)C.text.push(`<text class="tv" x="${cx}" y="${yb+33}">${sym?'V':num(c.emf.v)+' V'}</text>`);
+  }
+  const H=bottom+6,VW=W+pad*2;
+  const desc=`Circuit: ${expr(strip(c.tree)==='wire'||strip(c.tree)==='open'?{t:'L',label:'wire'}:strip(c.tree))}`;
+  return `<svg viewBox="0 0 ${VW} ${H}" role="img" aria-label="${desc}" style="max-width:${Math.round(VW*1.9)}px">${C.bg.join('')}${C.wires.join('')}${C.flows.join('')}${C.sym.join('')}${C.text.join('')}</svg>`;
+}
+
+/* ============ App state ============ */
+const $=id=>document.getElementById(id);
+const LEVELS=[
+  [0,'Mix','All levels'],[1,'Level 1','Series or parallel'],[2,'Level 2','Simple mixed'],[3,'Level 3','Nested mixed'],
+  [4,'Level 4','Ratios with R and V'],[5,'Level 5','Circuit changes'],[6,'Level 6','Internal resistance']];
+const FMTS={X:'Mixed',V:'Find the value',R:'Find the ratio',T:'Complete the table',M:'DSE-style MC'};
+const SET_SIZE=10;
+const S={mode:'practice',level:2,fmt:'X',q:null,hintN:0,done:false,revealed:false,first:true,values:false,flow:false,walk:null,walkI:0,walkTimer:null,
+  score:{right:0,total:0},cs:null,results:{},sel:{},exp:null,timerEnd:0,timerId:null};
+const randSeed=()=>Math.floor(Math.random()*2**31);
+
+function loadQuestion(){
+  stopWalk();
+  let seed;
+  if(S.cs){seed=hashStr(S.cs.code+'#'+S.cs.i);S.q=genQuestion(S.cs.level,S.cs.fmt,seed)}
+  else S.q=genQuestion(S.level,S.fmt,randSeed());
+  S.hintN=0;S.done=false;S.revealed=false;S.first=true;S.values=false;S.flow=false;S.walk=null;S.sel={};S.checked=false;
+  renderAll();
+}
+function renderLevels(){
+  const lv=S.cs?S.cs.level:S.level;
+  $('levels').innerHTML=LEVELS.map(([n,a,b])=>`<button data-l="${n}" aria-pressed="${n===lv}" ${S.cs?'disabled':''}><span class="n">${a}</span><span class="d">${b}</span></button>`).join('');
+  const f=$('fmt');f.value=S.cs?S.cs.fmt:S.fmt;
+  const lock=!!S.cs||lv===5;f.disabled=lock;
+  $('fmtNote').textContent=S.cs?`Class set ${S.cs.code}`:lv===5?'Level 5 always asks you to predict the change.':lv===4?'Level 4 has no numbers, so tables are not used.':lv===6?'Level 6 uses typed answers and MC.':'';
+}
+function renderStats(){
+  const parts=[];
+  if(S.cs){const r=Object.values(S.results);parts.push(`Question ${S.cs.i+1} of ${SET_SIZE}`,`First-try correct ${r.filter(x=>x).length}`)}
+  else parts.push(`First-try correct ${S.score.right} of ${S.score.total}`);
+  $('stats').innerHTML=parts.map(p=>`<span>${p}</span>`).join('')+(S.cs?'<button class="btn" id="bLeave" style="min-height:28px;padding:2px 10px">Leave set</button>':'');
+}
+function currentView(){
+  if(S.mode==='explore')return{c:S.exp,opts:{values:true,flow:true,toggle:true}};
+  if(S.walk){const st=S.walk[S.walkI];return{c:st.c,opts:{values:st.values,flow:st.values,hl:st.hl}}}
+  return{c:S.q.c,opts:{values:S.values,flow:S.values}};
+}
+function renderPaper(){
+  const v=currentView();
+  $('paper').classList.toggle('live',S.mode==='explore');
+  $('paper').innerHTML=circuitSVG(v.c,v.opts);
+}
+function renderBoardBar(){
+  if(S.mode==='explore'){$('boardBar').innerHTML='';return}
+  const canValues=S.done;
+  $('boardBar').innerHTML=`
+    <button class="btn" id="bWalk" aria-pressed="${!!S.walk}">Step-by-step solution</button>
+    <button class="btn" id="bValues" aria-pressed="${S.values}" ${canValues?'':'disabled title="Available after answering"'}>Show values and current</button>
+    <button class="btn" id="bToExp">Explore this circuit</button>`;
+}
+function renderWalk(){
+  const w=$('walk');
+  if(!S.walk||S.mode!=='practice'){w.hidden=true;w.innerHTML='';return}
+  const st=S.walk[S.walkI];
+  w.hidden=false;
+  w.innerHTML=`<div class="prog">Step ${S.walkI+1} of ${S.walk.length}</div><p>${st.text}</p>
+    <div class="bar"><button class="btn" id="wPrev" ${S.walkI?'':'disabled'}>Back</button><button class="btn primary" id="wNext" ${S.walkI<S.walk.length-1?'':'disabled'}>Next step</button><button class="btn" id="wPlay" aria-pressed="${!!S.walkTimer}">${S.walkTimer?'Pause':'Play'}</button></div>`;
+}
+function stopWalk(){if(S.walkTimer){clearInterval(S.walkTimer);S.walkTimer=null}}
+const LETTERS='ABCD';
+function renderAnswerBody(){
+  const q=S.q,show=S.revealed;
+  if(q.kind==='num')return `<form class="ans ansin" id="fAns"><input type="text" id="aNum" inputmode="decimal" autocomplete="off" aria-label="Your answer"><span class="unit">${q.unit}</span><button class="btn primary" type="submit">Check</button></form>`;
+  if(q.kind==='ratio')return `<form class="ans ansin" id="fAns"><input type="text" id="aNum" autocomplete="off" placeholder="${q.n===3?'2 : 3 : 6':'2 : 3'}" aria-label="Your ratio"><button class="btn primary" type="submit">Check</button></form>`;
+  if(q.kind==='mc')return `<div class="opts" id="opts">${q.options.map((o,i)=>`<button class="opt ${show&&o.ok?'ok':''}" data-i="${i}" ${S.done?'disabled':''}><b>${LETTERS[i]}</b><span>${o.text}</span></button>`).join('')}</div>`;
+  if(q.kind==='table'){
+    const cell=(r,k,u)=>`<td><input type="text" id="t_${r}_${k}" inputmode="decimal" autocomplete="off" aria-label="${q.rows[r].label} ${u}" ${show?`value="${num(q.rows[r][k].v)}" readonly class="ok"`:''}></td>`;
+    return `<div class="tw"><table><thead><tr><th>Component</th><th>R / Ω</th><th>V / V</th><th>I / A</th><th>P / W</th></tr></thead><tbody>${q.rows.map((r,i)=>`<tr><td><b>${r.label}</b></td><td>${num(r.R.v)}</td>${cell(i,'V','p.d. in volts')}${cell(i,'I','current in amperes')}${cell(i,'P','power in watts')}</tr>`).join('')}</tbody></table></div><div class="ansin"><button class="btn primary" id="bTable" ${S.done?'disabled':''}>Check table</button></div>`;
+  }
+  if(q.kind==='predict')return `<div class="pred">${q.items.map((it,i)=>`<div class="pr"><span class="lb">${it.label}</span><div class="seg" role="group" aria-label="${it.label}">${['up','down','same'].map(d=>{
+      const on=S.sel[i]===d,cls=show&&it.dir===d?'ok':(S.checked&&on&&it.dir!==d?'no':(S.checked&&on?'ok':''));
+      return `<button data-i="${i}" data-d="${d}" aria-pressed="${on}" class="${cls}" ${S.done?'disabled':''}>${WD[d]}</button>`}).join('')}</div></div>`).join('')}</div><div class="ansin"><button class="btn primary" id="bPred" ${S.done?'disabled':''}>Check</button></div>`;
+  return'';
+}
+function renderPanel(){
+  if(S.mode==='explore')return renderExplorePanel();
+  const q=S.q,proj=document.documentElement.classList.contains('proj');
+  const lvlName=LEVELS.find(l=>l[0]===q.level);
+  $('qpanel').innerHTML=`
+    <div class="qhead"><span class="chip">${lvlName[1]}</span><span class="chip">${q.skill}</span></div>
+    <p class="stem">${q.stem}</p>
+    <p class="cond">${q.cond}</p>
+    <div id="ansBody">${renderAnswerBody()}</div>
+    <div id="fb" aria-live="polite"></div>
+    <ul class="hints" id="hints"></ul>
+    <div id="checks"></div>
+    <div class="bar">
+      <button class="btn" id="bHint">Hint</button>
+      <button class="btn" id="bReveal">${proj?'Reveal answer':'Show answer'}</button>
+      ${S.cs?`<button class="btn" id="bPrev" ${S.cs.i?'':'disabled'}>Previous</button>`:''}
+      <button class="btn primary" id="bNext">${S.cs&&S.cs.i>=SET_SIZE-1?'Finish set':'Next question'}</button>
+    </div>
+    ${proj?`<div class="row" id="timerRow"><span class="note">Timer</span><button class="btn" data-t="60">1 min</button><button class="btn" data-t="120">2 min</button><button class="btn" data-t="180">3 min</button><span class="timer" id="timer"></span></div>`:''}`;
+  renderHints();
+  if(S.revealed)showResolved();
+}
+function renderHints(){
+  const q=S.q,h=$('hints');if(!h)return;
+  h.innerHTML=q.hints.slice(0,S.hintN).map(x=>`<li>${x}</li>`).join('');
+  const b=$('bHint');if(b){b.disabled=S.hintN>=q.hints.length;b.textContent=S.hintN?`Hint ${Math.min(S.hintN+1,3)} of 3`:'Hint'}
+}
+function setFb(type,html){$('fb').innerHTML=html?`<div class="fb ${type}">${html}</div>`:''}
+function showChecks(){
+  const c=S.q.kind==='predict'?S.q.after:S.q.c;
+  const list=conservation(c);
+  $('checks').innerHTML=`<h3 style="margin-bottom:6px">Check with conservation</h3><ul class="checks">${list.map(x=>`<li>${x}</li>`).join('')}</ul>`;
+}
+function record(right){
+  if(!S.first)return;
+  S.first=false;
+  if(S.cs){if(!(S.cs.i in S.results))S.results[S.cs.i]=right}
+  else{S.score.total++;if(right)S.score.right++}
+  renderStats();
+}
+function finish(right,msg){
+  record(right);
+  S.done=true;
+  setFb(right?'good':'info',msg);
+  showChecks();
+  renderBoardBar();
+}
+function wrong(msg){
+  record(false);
+  setFb('bad',`<b>Not yet.</b> ${msg||'Try again, or take a hint.'}`);
+}
+function checkNum(){
+  const q=S.q,raw=$('aNum').value;
+  if(q.kind==='num'){
+    const x=parseNum(raw);
+    if(x===null){setFb('bad','Enter a number, such as 1.5 or 3/4.');return}
+    if(near(x,q.ans))return finish(true,`<b>Correct.</b> The answer is ${q.ansText}.`);
+    const m=q.mistakes.find(m=>near(x,m.val));
+    wrong(m&&m.msg);
+  }else{
+    const parts=raw.split(':').map(parseNum);
+    if(parts.length!==q.n||parts.some(p=>p===null||p<=0)){setFb('bad',`Enter ${q.n} numbers separated by colons, such as ${q.n===3?'2 : 3 : 6':'2 : 3'}.`);return}
+    if(ratioEq(parts,q.ans))return finish(true,`<b>Correct.</b> The ratio is ${q.ansText}.`);
+    const m=q.mistakes.find(m=>ratioEq(parts,m.val));
+    wrong(m&&m.msg);
+  }
+}
+function checkTable(){
+  const q=S.q;let bad=0,blank=0;
+  q.rows.forEach((r,i)=>['V','I','P'].forEach(k=>{
+    const el=$(`t_${i}_${k}`),x=parseNum(el.value);
+    el.classList.remove('ok','no');
+    if(x===null){blank++;return}
+    if(near(x,r[k].v))el.classList.add('ok');else{el.classList.add('no');bad++}
+  }));
+  if(blank)return setFb('bad',`Fill in the ${blank} empty box${blank===1?'':'es'} first.`);
+  if(!bad)return finish(true,'<b>Correct.</b> Every value in the table is right.');
+  wrong(`${bad} value${bad===1?' is':'s are'} not right yet. Red boxes need another look. Parts in series have the same I, and parallel branches have the same V.`);
+}
+function checkPred(){
+  const q=S.q;
+  if(q.items.some((_,i)=>!S.sel[i]))return setFb('bad','Choose an answer for every row.');
+  S.checked=true;
+  const wrongItems=q.items.filter((it,i)=>S.sel[i]!==it.dir);
+  if(!wrongItems.length){
+    $('ansBody').innerHTML=(S.done=true,renderAnswerBody());
+    S.done=false;
+    return finish(true,`<b>Correct.</b> ${q.items.map(i=>i.why).join('. ')}.`);
+  }
+  $('ansBody').innerHTML=renderAnswerBody();
+  S.checked=false;
+  const w=wrongItems[0];
+  const reason=w.dir==='same'?'An ideal cell keeps its p.d. fixed, so a branch directly across it is unaffected.':w.dir==='up'?'Work out the new total resistance. A smaller total means more current from the cell.':'Check the new p.d. across this component. It may lose its share or be short-circuited.';
+  wrong(`${wrongItems.length} row${wrongItems.length===1?' is':'s are'} not right. ${reason}`);
+}
+function reveal(){
+  S.revealed=true;
+  record(false);
+  S.done=true;
+  $('ansBody').innerHTML=renderAnswerBody();
+  showResolved();
+  renderBoardBar();
+}
+function showResolved(){
+  const q=S.q;
+  const extra=q.kind==='predict'?q.items.map(i=>i.why).join('. ')+'.':q.ansText;
+  setFb('info',`<b>Answer.</b> ${extra}`);
+  showChecks();
+}
+
+/* ============ Explore mode: change values and watch the circuit respond ============ */
+function toExplore(){
+  if(!S.done)record(false);
+  const src=S.q.c;
+  const c={tree:clone(src.tree),emf:src.sym?F(12):src.emf,r:src.r,level:src.level,identical:false,termV:src.termV};
+  if(src.sym)loads(c.tree).forEach(l=>{l.R=src.identical?F(6):l.R.mul(F(2))});
+  c.emf=F(Math.round(c.emf.v*2)/2);
+  S.exp=solve(c);S.mode='explore';stopWalk();S.walk=null;renderAll();
+}
+function renderExplorePanel(){
+  const c=S.exp,ls=loads(c.tree),sw=allNodes(c.tree).filter(n=>n.t==='W');
+  const emfHtml=`<div class="sl"><b>e.m.f.</b><input type="range" id="xE" min="1" max="36" step="0.5" value="${c.emf.v}" aria-label="e.m.f."><output id="oE">${num(c.emf.v)} V</output></div>`;
+  const rHtml=c.r?`<div class="sl"><b>r</b><input type="range" id="xr" min="0" max="5" step="0.5" value="${c.r.v}" aria-label="Internal resistance"><output id="or">${num(c.r.v)} Ω</output></div>`:'';
+  $('qpanel').innerHTML=`<h2>Explore this circuit</h2>
+    <p class="cond">Move a slider${sw.length?' or tap the switch':''}, then watch how the rest of the circuit responds.</p>
+    ${emfHtml}${rHtml}
+    ${ls.map((l,i)=>`<div class="sl"><b>${l.label}</b><input type="range" data-r="${i}" min="1" max="30" step="1" value="${Math.round(l.R.v)}" aria-label="Resistance of ${l.label}"><output id="o${i}">${Math.round(l.R.v)} Ω</output></div>`).join('')}
+    ${sw.length?`<div class="row">${sw.map(s=>`<button class="btn" data-sw="${s.id}" aria-pressed="${s.closed}">Switch ${s.label}: ${s.closed?'closed':'open'}</button>`).join('')}</div>`:''}
+    <div id="xOut"></div>
+    <div class="bar"><button class="btn primary" id="bBack">Back to practice</button></div>`;
+  ls.forEach(l=>{l.R=F(Math.round(l.R.v))});
+  updateExplore();
+}
+function updateExplore(){
+  const c=S.exp;solve(c);renderPaper();
+  const out=$('xOut');if(!out)return;
+  if(c.short){out.innerHTML='<div class="fb bad">The closed switch short-circuits the cell. With no resistance left, an ideal cell has no sensible current. Open the switch.</div>';return}
+  const rt=c.Rt?num(c.Rt.v)+' Ω':'open circuit';
+  out.innerHTML=`<div class="tw"><table><thead><tr><th></th><th>V / V</th><th>I / A</th><th>P / W</th></tr></thead><tbody>
+    ${loads(c.tree).map(l=>`<tr><td><b>${l.label}</b></td><td>${num(l.V.v)}</td><td>${num(l.I.v)}</td><td>${num(l.P.v)}</td></tr>`).join('')}
+    ${c.r?`<tr><td><b>r</b></td><td>${num(c.It.mul(c.r).v)}</td><td>${num(c.It.v)}</td><td>${num(c.It.mul(c.It).mul(c.r).v)}</td></tr>`:''}
+    <tr><td><b>Cell</b></td><td>${num(c.emf.v)}</td><td>${num(c.It.v)}</td><td>${num(c.emf.mul(c.It).v)}</td></tr></tbody></table></div>
+    <p class="cond" style="margin-top:8px">External resistance: ${rt}</p>`;
+}
+
+function renderAll(){
+  document.querySelectorAll('#mPractice,#mExplore').forEach(b=>b.setAttribute('aria-pressed',String((b.id==='mPractice')===(S.mode==='practice'))));
+  renderLevels();renderStats();renderPaper();renderBoardBar();renderWalk();renderPanel();
+}
+
+/* ============ Events ============ */
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button,[data-sw]');if(!t)return;
+  const id=t.id;
+  if(t.dataset.l!==undefined&&t.closest('#levels')){S.level=+t.dataset.l;S.mode='practice';return loadQuestion()}
+  if(t.dataset.sw&&S.mode==='explore'){
+    const n=findId(S.exp.tree,+t.dataset.sw);n.closed=!n.closed;renderExplorePanel();return;
+  }
+  if(t.dataset.t&&t.closest('#timerRow'))return startTimer(+t.dataset.t);
+  if(t.closest('#opts')){
+    const o=S.q.options[+t.dataset.i];
+    if(S.done)return;
+    if(o.ok){t.classList.add('ok');[...$('opts').children].forEach(b=>b.disabled=true);finish(true,`<b>Correct.</b> The answer is ${o.text}.`)}
+    else{t.classList.add('no');t.disabled=true;wrong(o.msg)}
+    return;
+  }
+  if(t.closest('.pred')&&t.dataset.d&&!S.done){S.sel[t.dataset.i]=t.dataset.d;t.parentElement.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b===t)));return}
+  const act={
+    mPractice(){if(S.mode!=='practice'){S.mode='practice';renderAll()}},
+    mExplore(){if(S.mode!=='explore')toExplore()},
+    bClass(){const d=$('drawer');d.hidden=!d.hidden;t.setAttribute('aria-pressed',String(!d.hidden))},
+    bProj(){
+      const on=document.documentElement.classList.toggle('proj');t.setAttribute('aria-pressed',String(on));
+      try{if(on&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(()=>{});else if(!on&&document.fullscreenElement)document.exitFullscreen().catch(()=>{})}catch(err){}
+      if(S.mode==='practice')renderPanel();
+    },
+    bCreate(){
+      const ch='ABCDEFGHJKMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<4;i++)s+=ch[Math.floor(Math.random()*ch.length)];
+      const lv=S.level,f=lv===5?'X':S.fmt,code=`${lv}${f}-${s}`;
+      $('newCode').textContent=code;joinSet(code);
+    },
+    bHint(){S.hintN++;renderHints()},
+    bLeave(){S.cs=null;S.results={};$('newCode').textContent='';loadQuestion()},
+    bReveal(){reveal()},
+    bNext(){
+      if(S.cs&&S.cs.i>=SET_SIZE-1){
+        const r=Object.values(S.results).filter(x=>x).length,code=S.cs.code;
+        S.cs=null;S.results={};loadQuestion();
+        setFb('info',`<b>Set ${code} finished.</b> You got ${r} of ${SET_SIZE} right on the first try.`);return;
+      }
+      if(S.cs)S.cs.i++;loadQuestion();
+    },
+    bPrev(){if(S.cs&&S.cs.i>0){S.cs.i--;loadQuestion()}},
+    bTable(){checkTable()},
+    bPred(){checkPred()},
+    bWalk(){
+      if(S.walk){stopWalk();S.walk=null}else{
+        if(!S.done)record(false);
+        S.walk=walkthrough(S.q);S.walkI=0;
+      }
+      renderPaper();renderBoardBar();renderWalk();
+    },
+    bValues(){S.values=!S.values;renderPaper();renderBoardBar()},
+    bToExp(){toExplore()},
+    bBack(){S.mode='practice';renderAll()},
+    wPrev(){if(S.walkI>0){S.walkI--;stopWalk();renderPaper();renderWalk()}},
+    wNext(){if(S.walkI<S.walk.length-1){S.walkI++;stopWalk();renderPaper();renderWalk()}},
+    wPlay(){
+      if(S.walkTimer)stopWalk();
+      else{
+        if(S.walkI>=S.walk.length-1)S.walkI=0;
+        S.walkTimer=setInterval(()=>{if(S.walkI<S.walk.length-1){S.walkI++;renderPaper();renderWalk()}if(S.walkI>=S.walk.length-1){stopWalk();renderWalk()}},3500);
+      }
+      renderPaper();renderWalk();
+    }
+  }[id];
+  if(act)act();
+});
+document.addEventListener('submit',e=>{
+  e.preventDefault();
+  if(e.target.id==='fAns')checkNum();
+  if(e.target.id==='fJoin')joinFromInput();
+});
+document.addEventListener('input',e=>{
+  if(S.mode!=='explore')return;
+  const t=e.target,c=S.exp;
+  if(t.id==='xE'){c.emf=F(+t.value);$('oE').textContent=num(+t.value)+' V'}
+  else if(t.id==='xr'){c.r=F(+t.value);$('or').textContent=num(+t.value)+' Ω'}
+  else if(t.dataset.r!==undefined){const l=loads(c.tree)[+t.dataset.r];l.R=F(+t.value);$('o'+t.dataset.r).textContent=t.value+' Ω'}
+  else return;
+  updateExplore();
+});
+$('fmt').addEventListener('change',e=>{S.fmt=e.target.value;loadQuestion()});
+function joinSet(code){
+  S.cs={code,level:+code[0],fmt:code[1],i:0};S.results={};S.mode='practice';$('codeErr').hidden=true;loadQuestion();
+}
+function joinFromInput(){
+  const code=$('codeIn').value.trim().toUpperCase().replace(/\s/g,'');
+  if(!/^[0-6][XVRTM]-[A-Z0-9]{4}$/.test(code)){const er=$('codeErr');er.textContent='That code does not look right. It has this form: 2X-K7QF.';er.hidden=false;return}
+  joinSet(code);$('drawer').hidden=true;$('bClass').setAttribute('aria-pressed','false');
+}
+function startTimer(sec){
+  clearInterval(S.timerId);S.timerEnd=Date.now()+sec*1000;
+  const tick=()=>{
+    const el=$('timer');if(!el){clearInterval(S.timerId);return}
+    const left=Math.max(0,Math.ceil((S.timerEnd-Date.now())/1000));
+    el.textContent=left?`${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`:"Time's up";
+    el.classList.toggle('up',!left);
+    if(!left)clearInterval(S.timerId);
+  };
+  tick();S.timerId=setInterval(tick,250);
+}
+$('gloss').innerHTML=[['series','串聯'],['parallel','並聯'],['current','電流'],['potential difference (p.d.)','電勢差'],['resistance','電阻'],['equivalent resistance','等效電阻'],['power','功率'],['ammeter','安培計'],['voltmeter','伏特計'],['bulb','燈泡'],['switch','開關'],['short circuit','短路'],['e.m.f.','電動勢'],['internal resistance','內阻'],['terminal p.d.','端電壓'],['junction','接點'],['brightness','亮度'],['ratio','比例']].map(([a,b])=>`<span>${a} · ${b}</span>`).join('');
+loadQuestion();
+</script>
+</body>
+</html>
