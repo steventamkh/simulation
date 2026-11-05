@@ -166,6 +166,12 @@ footer .inner{padding-block:18px;display:flex;flex-wrap:wrap;gap:6px 18px;justif
    ============================================================ */
 const SIMS = [
   {
+    file: "refraction-ladder.html",
+    title: "Refraction Ladder", zh: "折射階梯",
+    desc: "Climb five levels: which way a ray bends, finding the angles, Snell's law, critical angle and total internal reflection, with instant feedback.",
+    topic: "wave", sub: "Refraction", kind: "Practice", added: "2026-11-05", icon: "refraction"
+  },
+  {
     file: "circuit-analysis-lab.html",
     title: "Circuit Analysis Lab", zh: "電路分析練習室",
     desc: "Find current, p.d., resistance, power and their ratios in series, parallel and mixed circuits, with step-by-step solutions and class sets.",
@@ -229,6 +235,12 @@ const ICONS = {
     <rect x="17" y="3" width="22" height="10" rx="1" fill="var(--tcs)" stroke="var(--ray)" stroke-width="2"/>
     <circle cx="48" cy="25" r="7" fill="var(--tcs)" stroke="currentColor" stroke-width="2"/>
     <path d="M43 20l10 10M53 20l-10 10" stroke="currentColor" stroke-width="1.6"/></svg>`,
+  refraction: `<svg viewBox="0 0 56 56" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color:var(--tc)">
+    <rect x="4" y="28" width="48" height="24" fill="currentColor" fill-opacity=".18" stroke="none"/>
+    <line x1="4" y1="28" x2="52" y2="28" stroke="currentColor" stroke-width="2.2"/>
+    <line x1="28" y1="6" x2="28" y2="50" stroke="currentColor" stroke-width="1.4" stroke-dasharray="3 3" opacity=".7"/>
+    <polyline points="10,8 28,28 37,50" stroke="var(--ray)" stroke-width="2.2"/>
+    <circle cx="28" cy="28" r="2" fill="var(--ray)"/></svg>`,
   generic: `<svg viewBox="0 0 56 56" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--tc)">
     <path d="M22 8h12M24 8v14L12 44a4 4 0 0 0 3.5 6h25a4 4 0 0 0 3.5-6L32 22V8"/><path d="M17 36h22" opacity=".5"/></svg>`
 };

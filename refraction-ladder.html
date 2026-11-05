@@ -1,0 +1,947 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body style="margin:0"><title>Refraction Ladder</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Schibsted+Grotesk:wght@600;800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: an optical bench. The ray diagram holds the left column and the question works beside it; on a phone they stack as question, diagram, answer. */
+:root{
+  --bg:#eef4f5; --panel:#fbfdfd; --fg:#13262e; --muted:#51666f; --line:#c5d4d9;
+  --accent:#0a6580; --accent-fg:#ffffff; --accent-soft:#d8ebf1;
+  --ray:#cf2a23; --m1:#f1f7f8; --m2:#bfe0e8; --boundary:#27505f;
+  --ok:#14753f; --ok-soft:#dcf1e4; --bad:#b4261f; --bad-soft:#fae3e0; --halo:#ffffff;
+  --display:"Schibsted Grotesk","Segoe UI",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible","Segoe UI",system-ui,"Microsoft JhengHei",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1a1f; --panel:#15252c; --fg:#e6f0f2; --muted:#9db2ba; --line:#2f464f;
+  --accent:#62c6df; --accent-fg:#06222b; --accent-soft:#1c3b47;
+  --ray:#ff7468; --m1:#14252c; --m2:#20485a; --boundary:#94c3d1;
+  --ok:#62d394; --ok-soft:#143626; --bad:#ff8f85; --bad-soft:#42201d; --halo:#0e1a1f;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1a1f; --panel:#15252c; --fg:#e6f0f2; --muted:#9db2ba; --line:#2f464f;
+  --accent:#62c6df; --accent-fg:#06222b; --accent-soft:#1c3b47;
+  --ray:#ff7468; --m1:#14252c; --m2:#20485a; --boundary:#94c3d1;
+  --ok:#62d394; --ok-soft:#143626; --bad:#ff8f85; --bad-soft:#42201d; --halo:#0e1a1f;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:400 17px/1.5 var(--body)}
+.wrap{max-width:1040px;margin:0 auto;padding-block:20px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:16px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font:800 clamp(26px,5vw,34px)/1.1 var(--display);margin:0;letter-spacing:-.01em}
+.sub{margin:2px 0 0;color:var(--muted);font-size:15px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,.wedge:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.ghost{background:none;border:1px solid var(--line);border-radius:6px;padding:7px 12px;min-height:40px;font-size:15px}
+.ghost[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+
+.ladder{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.rname{font-size:14px;line-height:1.3}
+.eq{display:block;font:500 15px/1.6 var(--mono);overflow-wrap:anywhere}
+.explorer{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 18px}
+.explorer summary{cursor:pointer;font:600 17px var(--display);min-height:32px}
+.ex-body{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px 24px;margin-top:12px}
+.ex-body svg{display:block;width:100%;height:auto;border-radius:6px;border:1px solid var(--line)}
+.ex-side{display:flex;flex-direction:column;gap:12px;min-width:0}
+.ex-side select{font:inherit;color:var(--fg);background:var(--panel);border:2px solid var(--line);border-radius:6px;padding:8px;min-height:44px;width:100%}
+.ex-side p{margin:0}
+.rung{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;min-width:0;
+  background:var(--panel);border:1px solid var(--line);border-bottom-width:4px;border-radius:6px;padding:10px 14px}
+.rung b{font:600 16px/1.25 var(--display)}
+.rung small{color:var(--muted);font-size:14px}
+.rung[aria-current="true"]{border-color:var(--accent)}
+.rung[disabled]{cursor:not-allowed;opacity:.72}
+.rung.passed small{color:var(--ok);font-weight:700}
+.next-note{margin:0;color:var(--muted);font-size:14px}
+
+.bench{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:18px;
+  display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);
+  grid-template-areas:"meta meta" "fig prompt" "fig controls" "fig feedback";
+  grid-template-rows:auto auto auto 1fr;column-gap:24px;row-gap:14px}
+.meta{grid-area:meta;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.meta span{font:500 13px var(--mono);color:var(--muted);letter-spacing:.02em}
+.pips{display:flex;gap:6px}
+.pip{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font:500 13px var(--mono);color:var(--muted)}
+.pip.now{border-color:var(--accent);color:var(--fg)}
+.pip.ok{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.pip.bad{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.fig{grid-area:fig;min-width:0}
+.fig svg{display:block;width:100%;height:auto;border-radius:6px;border:1px solid var(--line);user-select:none;-webkit-user-select:none}
+.prompt{grid-area:prompt;min-width:0}
+.prompt p{margin:0;font-size:19px;line-height:1.42;text-wrap:pretty}
+.controls{grid-area:controls;min-width:0;display:flex;flex-direction:column;gap:8px}
+.feedback{grid-area:feedback;min-width:0;display:flex;flex-direction:column;gap:10px}
+.opt{background:var(--panel);border:2px solid var(--line);border-radius:6px;padding:10px 14px;min-height:48px;text-align:left;font-weight:700}
+.opt:hover:not([disabled]){border-color:var(--accent);background:var(--accent-soft)}
+.opt[disabled]{cursor:default;opacity:.62}
+.opt.right{border-color:var(--ok);background:var(--ok-soft);opacity:1}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft);opacity:1}
+.letters{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.letters .opt{text-align:center;font:500 20px var(--mono);padding:8px 0}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.answer{display:flex;align-items:center;gap:6px;font:500 20px var(--mono)}
+.answer input{font:inherit;width:6em;padding:8px 10px;min-height:48px;border:2px solid var(--line);border-radius:6px;background:var(--panel);color:var(--fg)}
+.primary{background:var(--accent);color:var(--accent-fg);border:0;border-radius:6px;padding:10px 18px;min-height:48px;font-weight:700}
+.primary:hover{filter:brightness(1.08)}
+label.slide{display:flex;flex-direction:column;gap:4px;font-size:15px;color:var(--muted)}
+label.slide input{width:100%;height:32px;accent-color:var(--accent)}
+.err{color:var(--bad);font-size:15px;margin:0;min-height:1.4em}
+.hintbtn{align-self:flex-start;background:none;border:0;padding:6px 0;color:var(--accent);text-decoration:underline;font-size:16px;min-height:40px}
+.hints{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.hints li{border-left:3px solid var(--accent);padding:2px 0 2px 10px;font-size:16px}
+.verdict{border-radius:6px;padding:12px 14px;font-size:16px;display:flex;flex-direction:column;gap:6px}
+.verdict h2{margin:0;font:600 17px var(--display)}
+.verdict p{margin:0}
+.verdict.ok{background:var(--ok-soft)} .verdict.ok h2{color:var(--ok)}
+.verdict.bad{background:var(--bad-soft)} .verdict.bad h2{color:var(--bad)}
+.zh{display:none;color:var(--muted);font-size:.92em}
+.show-zh .zh{display:inline}
+
+.result{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:24px 18px;display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.result h2{margin:0;font:800 clamp(30px,6vw,44px)/1.1 var(--display)}
+.result p{margin:0;max-width:62ch}
+.foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+
+svg text{font-family:var(--body);fill:var(--fg);font-size:15px;paint-order:stroke;stroke:var(--halo);stroke-width:3px;stroke-linejoin:round}
+svg .sm{font-size:14px;fill:var(--muted)}
+svg .val{font:500 14px var(--mono)}
+svg .ltr{font:500 19px var(--mono)}
+.m1{fill:var(--m1)} .m2{fill:var(--m2)}
+.bd{stroke:var(--boundary);stroke-width:2.5}
+.nm{stroke:var(--fg);stroke-width:1.6;stroke-dasharray:7 6;fill:none}
+.ext{stroke:var(--muted);stroke-width:1.6;stroke-dasharray:2 5;stroke-linecap:round;fill:none}
+.ray{stroke:var(--ray);stroke-width:3.2;fill:none;stroke-linecap:round}
+.head{fill:var(--ray)}
+.ray.out{stroke-dasharray:1;stroke-dashoffset:0;animation:draw .7s ease-out}
+.head.out{animation:appear .7s ease-out}
+@keyframes draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes appear{0%,60%{opacity:0}100%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.ray.out,.head.out{animation:none}}
+.w{fill:var(--accent);fill-opacity:.16;stroke:var(--accent);stroke-width:1.4}
+.wedge{cursor:pointer}
+.wedge .hit{fill:transparent;stroke:none}
+.wedge:hover .w{fill-opacity:.36}
+.wedge.right .w{fill:var(--ok);stroke:var(--ok);fill-opacity:.42}
+.wedge.wrong .w{fill:var(--bad);stroke:var(--bad);fill-opacity:.42}
+.wedge.off{cursor:default}
+.mine{stroke:var(--accent);stroke-width:3;stroke-dasharray:9 6}
+.mine.faded{stroke:var(--bad);stroke-width:2}
+.grab{fill:var(--accent);stroke:var(--halo);stroke-width:2.5;cursor:grab}
+.true{stroke:var(--ok);stroke-width:2.6;stroke-dasharray:9 5}
+.sq{fill:none;stroke:var(--ok);stroke-width:1.8}
+
+@media (max-width:760px){
+  .bench{grid-template-columns:minmax(0,1fr);grid-template-areas:"meta" "prompt" "fig" "controls" "feedback";grid-template-rows:none;padding:14px}
+  .prompt p{font-size:18px}
+}
+@media (max-width:760px){
+  .rname{display:none}
+  .rung{padding:7px 7px}
+  .rung b{font-size:14px}
+  .rung small{font-size:12px;line-height:1.25}
+  .ex-body{grid-template-columns:minmax(0,1fr)}
+}
+</style>
+
+<a href="./" style="display:inline-flex;align-items:center;gap:6px;margin:10px 0 0 max(16px,env(safe-area-inset-left,0px));min-height:36px;padding:4px 12px;border-radius:999px;border:1px solid rgba(127,140,150,.35);font:500 13px/1.2 system-ui,-apple-system,sans-serif;color:inherit;text-decoration:none;opacity:.85">&#8592; All simulations</a>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Refraction Ladder</h1>
+      <p class="sub">HKDSE Physics · Light · Score 4 out of 5 to climb to the next level</p>
+    </div>
+    <button class="ghost" id="zh-toggle" type="button" aria-pressed="false">Show 中文 terms</button>
+  </header>
+  <nav class="ladder" id="ladder" aria-label="Levels"></nav>
+  <main id="stage"></main>
+  <details class="explorer" id="explorer" hidden>
+    <summary>Ray explorer: change the angle and watch the ray</summary>
+    <div class="ex-body">
+      <div id="ex-fig"></div>
+      <div class="ex-side">
+        <label class="slide" for="ex-pair">Media
+          <select id="ex-pair">
+            <option value="glass,air">Glass into air</option>
+            <option value="water,air">Water into air</option>
+            <option value="diamond,air">Diamond into air</option>
+            <option value="glass,water">Glass into water</option>
+            <option value="air,glass">Air into glass</option>
+          </select>
+        </label>
+        <label class="slide" for="ex-angle"><span>Angle of incidence: <b id="ex-angle-val">30°</b></span>
+          <input type="range" id="ex-angle" min="0" max="89" step="1" value="30">
+        </label>
+        <p id="ex-read" aria-live="polite"></p>
+      </div>
+    </div>
+  </details>
+  <div class="foot">
+    <p class="next-note">Your scores are saved in this browser only.</p>
+    <button class="ghost" id="reset" type="button">Reset my progress</button>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+/* ---------- helpers ---------- */
+const rad=d=>d*Math.PI/180, deg=r=>r*180/Math.PI;
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=ri(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
+const snell=(n1,n2,t)=>deg(Math.asin(n1*Math.sin(rad(t))/n2));
+const n2f=n=>n.toFixed(2);
+const speed=n=>(3/n).toFixed(2);
+const MEDIA={air:['Air',1.00],water:['Water',1.33],ethanol:['Ethanol',1.36],oil:['Cooking oil',1.47],perspex:['Perspex',1.49],
+  glass:['Glass',1.50],flint:['Flint glass',1.65],sapphire:['Sapphire',1.77],diamond:['Diamond',2.42]};
+const md=k=>({key:k,name:MEDIA[k][0],n:MEDIA[k][1],lower:MEDIA[k][0].toLowerCase()});
+const GLOSS=[['total internal reflection','全內反射'],['critical angle','臨界角'],['angle of reflection','反射角'],['optical fibre','光纖'],['cladding','包層'],['prism','稜鏡'],['angle of incidence','入射角'],['angle of refraction','折射角'],['refractive index','折射率'],['refractive indices','折射率'],
+  ['optically denser','光密'],['optically less dense','光疏'],['incident ray','入射光線'],['refracted ray','折射光線'],['boundary','界面'],['normal','法線'],['surface','表面']];
+function gloss(html){
+  const seen={};
+  const re=new RegExp('\\b('+GLOSS.map(g=>g[0]).join('|')+')\\b','gi');
+  return html.replace(re,m=>{const k=m.toLowerCase();if(seen[k])return m;seen[k]=1;
+    const z=GLOSS.find(g=>g[0]===k)[1];return m+'<span class="zh"> ('+z+')</span>'});
+}
+const store={
+  get(){try{return JSON.parse(localStorage.getItem('refraction-ladder')||'{}')}catch(e){return {}}},
+  set(v){try{localStorage.setItem('refraction-ladder',JSON.stringify(v))}catch(e){}}
+};
+
+/* ---------- ray geometry: b = boundary direction (deg), s = which way along the boundary the ray travels ---------- */
+function geo(b,s,t,p){
+  const u=[Math.cos(rad(b)),Math.sin(rad(b))], n=[-Math.sin(rad(b)),Math.cos(rad(b))];
+  const dir=a=>[Math.cos(rad(a))*n[0]+s*Math.sin(rad(a))*u[0],Math.cos(rad(a))*n[1]+s*Math.sin(rad(a))*u[1]];
+  const dI=dir(t);
+  // the reflected ray keeps its motion along the boundary and reverses its motion along the normal
+  const along=dI[0]*u[0]+dI[1]*u[1],across=dI[0]*n[0]+dI[1]*n[1];
+  return {b,s,t,p,u,n,dIn:dI,dOut:dir(p),dR:[along*u[0]-across*n[0],along*u[1]-across*n[1]]};
+}
+const P=[240,170];
+const at=(v,r,o)=>[(o||P)[0]+v[0]*r,(o||P)[1]+v[1]*r];
+const neg=v=>[-v[0],-v[1]];
+const fmt=q=>q[0].toFixed(1)+' '+q[1].toFixed(1);
+function roleDirs(g,role){
+  return {inN:[neg(g.dIn),neg(g.n)],inS:[neg(g.dIn),[-g.s*g.u[0],-g.s*g.u[1]]],
+    outN:[g.dOut,g.n],outS:[g.dOut,[g.s*g.u[0],g.s*g.u[1]]],dev:[g.dIn,g.dOut],refl:[g.dR,neg(g.n)]}[role];
+}
+function wedgePath(a,b,r){
+  const a1=Math.atan2(a[1],a[0]),a2=Math.atan2(b[1],b[0]);
+  let d=a2-a1;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;
+  const e=at(a,r),f=at(b,r);
+  return 'M'+fmt(P)+' L'+fmt(e)+' A'+r+' '+r+' 0 0 '+(d>0?1:0)+' '+fmt(f)+' Z';
+}
+function bisect(a,b){const m=[a[0]+b[0],a[1]+b[1]],l=Math.hypot(m[0],m[1])||1;return [m[0]/l,m[1]/l]}
+function arrow(from,d){
+  const mid=at(d,105,from),x=[-d[1],d[0]];
+  const pts=[[mid[0]+d[0]*9,mid[1]+d[1]*9],[mid[0]-d[0]*6+x[0]*6.5,mid[1]-d[1]*6+x[1]*6.5],[mid[0]-d[0]*6-x[0]*6.5,mid[1]-d[1]*6-x[1]*6.5]];
+  return pts.map(fmt).join(' ');
+}
+function regionLabel(g,side,lines,hug){
+  // hug keeps the label close to the boundary, clear of a reflected ray on the same side
+  const sign=side===1?-1:1, along=side===1?g.s:-g.s, perp=hug?44:92, off=hug?170:128;
+  let x=P[0]+sign*perp*g.n[0]+along*off*g.u[0], y=P[1]+sign*perp*g.n[1]+along*off*g.u[1];
+  x=Math.min(392,Math.max(88,x)); y=Math.min(318-(lines.length-1)*19,Math.max(24,y));
+  return textBlock(x,y,lines);
+}
+function textBlock(x,y,lines){
+  return '<text text-anchor="middle" x="'+x.toFixed(0)+'" y="'+y.toFixed(0)+'"><tspan style="font-weight:700">'+lines[0]+'</tspan>'+
+    lines.slice(1).map((l,i)=>'<tspan x="'+x.toFixed(0)+'" dy="19" class="sm">'+l+'</tspan>').join('')+'</text>';
+}
+function drawFig(q,done){
+  const g=q.g, big=1200;
+  const A=at(g.u,big),B=at(g.u,-big);
+  const poly=(sg)=>[A,B,[B[0]+sg*big*g.n[0],B[1]+sg*big*g.n[1]],[A[0]+sg*big*g.n[0],A[1]+sg*big*g.n[1]]].map(fmt).join(' ');
+  let h='<svg viewBox="0 0 480 340" role="img" aria-label="Ray diagram at a boundary between two media" id="fig-svg"'+(q.kind==='drag'&&!done?' style="touch-action:none"':'')+'>';
+  if(q.bg)h+=q.bg;
+  else{
+    h+='<polygon class="m1" points="'+poly(-1)+'"/><polygon class="m2" points="'+poly(1)+'"/>';
+    h+='<line class="bd" x1="'+A[0].toFixed(1)+'" y1="'+A[1].toFixed(1)+'" x2="'+B[0].toFixed(1)+'" y2="'+B[1].toFixed(1)+'"/>';
+    h+=regionLabel(g,1,q.labels[0],!!q.outcome)+regionLabel(g,2,q.labels[1]);
+  }
+  // wedges
+  // A predict question keeps its angle marks hidden until answered, because they would reveal the refracted ray.
+  // Marks that carry their own text, such as a given angle of incidence, stay visible.
+  const allW=q.wedges||{},wedges={};
+  Object.keys(allW).forEach(k=>{if(done||q.kind!=='choice'||q.showOut||allW[k].text)wedges[k]=allW[k]});
+  Object.keys(wedges).forEach(role=>{
+    const [a,b]=roleDirs(g,role),w=wedges[role],c=bisect(a,b);
+    const pos=at(c,w.far||62);
+    let cls='wedge';
+    if(q.kind==='wedge'&&done){cls+=' off';if(role===q.answer)cls+=' right';else if(role===q.chosen)cls+=' wrong'}
+    if(q.kind!=='wedge')cls+=' off';
+    const attrs=q.kind==='wedge'&&!done?' tabindex="-1" data-role="'+role+'"':'';
+    h+='<g class="'+cls+'"'+attrs+'><path class="w" d="'+wedgePath(a,b,44)+'"/>';
+    if(q.kind==='wedge'&&!done)h+='<path class="hit" d="'+wedgePath(a,b,76)+'"/>';
+    const txt=(done&&w.doneText)||w.text;
+    if(txt)h+='<text text-anchor="middle" dominant-baseline="central" class="'+(w.letter?'ltr':'val')+'" x="'+pos[0].toFixed(1)+'" y="'+pos[1].toFixed(1)+'">'+txt+'</text>';
+    h+='</g>';
+  });
+  if(q.extend){const x=at(g.dIn,150);h+='<line class="ext" x1="'+P[0]+'" y1="'+P[1]+'" x2="'+x[0].toFixed(1)+'" y2="'+x[1].toFixed(1)+'"/>'}
+  // normal
+  const nA=at(g.n,150),nB=at(g.n,-150);
+  const showNormal=q.kind!=='drag';
+  if(showNormal)h+='<line class="nm" x1="'+nA[0].toFixed(1)+'" y1="'+nA[1].toFixed(1)+'" x2="'+nB[0].toFixed(1)+'" y2="'+nB[1].toFixed(1)+'"/>';
+  // rays
+  if(!q.noRay||done){
+    const st=at(g.dIn,-(q.inLen||260));
+    if(q.inLen){const pr=[st[0]-g.dIn[0]*300,st[1]+g.dIn[1]*300];
+      h+='<line class="ray" x1="'+pr[0].toFixed(1)+'" y1="'+pr[1].toFixed(1)+'" x2="'+st[0].toFixed(1)+'" y2="'+st[1].toFixed(1)+'"/>'}
+    h+='<line class="ray" x1="'+st[0].toFixed(1)+'" y1="'+st[1].toFixed(1)+'" x2="'+P[0]+'" y2="'+P[1]+'"/>';
+    h+='<polygon class="head" points="'+arrow(at(g.dIn,-200),g.dIn)+'"/>';
+  }
+  const tir=q.outcome==='tir';
+  if(q.outcome&&(done||q.showRefl)){
+    const e=at(g.dR,260),op=q.reflOp!==undefined?q.reflOp:(tir?1:.32),anim=(!q.showRefl&&done)?' out':'';
+    h+='<g style="opacity:'+op.toFixed(2)+'"><line class="ray'+anim+'" pathLength="1" x1="'+P[0]+'" y1="'+P[1]+'" x2="'+e[0].toFixed(1)+'" y2="'+e[1].toFixed(1)+'"/>';
+    h+='<polygon class="head'+anim+'" points="'+arrow(P,g.dR)+'"/></g>';
+  }
+  const showOut=(q.showOut||done)&&!tir;
+  if(showOut){
+    const e=at(g.dOut,260),anim=(!q.showOut&&done)?' out':'';
+    h+='<line class="ray'+anim+'" pathLength="1" x1="'+P[0]+'" y1="'+P[1]+'" x2="'+e[0].toFixed(1)+'" y2="'+e[1].toFixed(1)+'"/>';
+    h+='<polygon class="head'+anim+'" points="'+arrow(P,g.dOut)+'"/>';
+  }
+  if(q.kind==='drag'){
+    if(done){
+      const ok=nA,nb=nB;
+      if(!q.correct)h+=lineAt(q.alpha,'mine faded');
+      h+='<line class="true" x1="'+ok[0].toFixed(1)+'" y1="'+ok[1].toFixed(1)+'" x2="'+nb[0].toFixed(1)+'" y2="'+nb[1].toFixed(1)+'"/>';
+      const a=at(g.u,-g.s*14),c=at(g.n,14),d=[a[0]+g.n[0]*14,a[1]+g.n[1]*14];
+      h+='<polyline class="sq" points="'+fmt(a)+' '+fmt(d)+' '+fmt(c)+'"/>';
+    }else{
+      h+='<g id="drag-line">'+lineAt(q.alpha,'mine')+'</g>';
+      const hp=[P[0]+126*Math.cos(rad(q.alpha)),P[1]+126*Math.sin(rad(q.alpha))];
+      h+='<circle class="grab" id="drag-handle" r="13" cx="'+hp[0].toFixed(1)+'" cy="'+hp[1].toFixed(1)+'"/>';
+    }
+  }
+  h+='<circle cx="'+P[0]+'" cy="'+P[1]+'" r="3.5" fill="var(--fg)"/></svg>';
+  return h;
+}
+function lineAt(alpha,cls){
+  const c=Math.cos(rad(alpha)),s=Math.sin(rad(alpha));
+  return '<line class="'+cls+'" x1="'+(P[0]-150*c).toFixed(1)+'" y1="'+(P[1]-150*s).toFixed(1)+'" x2="'+(P[0]+150*c).toFixed(1)+'" y2="'+(P[1]+150*s).toFixed(1)+'"/>';
+}
+
+/* ---------- Level 1 ---------- */
+const OPT={toward:'Bends toward the normal',away:'Bends away from the normal',straight:'Goes straight on'};
+const FLAT=[0,180,90,-90];
+function pair(into,minDiff,keys){
+  keys=keys||Object.keys(MEDIA);
+  for(;;){
+    const a=md(pick(keys)),b=md(pick(keys));
+    if(a.key===b.key||Math.abs(a.n-b.n)<minDiff)continue;
+    if((into==='dense'&&a.n<b.n)||(into==='rare'&&a.n>b.n)||!into)return [a,b];
+  }
+}
+function incidence(a,b){
+  const lim=a.n>b.n?deg(Math.asin(0.9*b.n/a.n)):60;
+  return ri(a.n>b.n&&lim<25?12:25,Math.max(15,Math.min(60,Math.floor(lim))));
+}
+function predictQ(a,b,mode,t){
+  t=t===undefined?incidence(a,b):t;
+  const p=t===0?0:snell(a.n,b.n,t), g=geo(pick(FLAT),pick([1,-1]),t,p);
+  const correct=t===0?'straight':(b.n>a.n?'toward':'away');
+  let prompt,labels,hints;
+  if(mode==='speed'){
+    prompt='Light travels at '+speed(a.n)+' × 10⁸ m/s in medium A and at '+speed(b.n)+' × 10⁸ m/s in medium B. A ray passes from A into B. What does the ray do at the boundary?';
+    labels=[['Medium A','v = '+speed(a.n)+' × 10⁸ m/s'],['Medium B','v = '+speed(b.n)+' × 10⁸ m/s']];
+    hints=['Compare the two speeds. Does the light speed up or slow down as it enters B?','Light travels more slowly in the optically denser medium.','A ray that slows down bends toward the normal. A ray that speeds up bends away from it.'];
+  }else if(mode==='name'){
+    prompt='A ray passes from '+a.lower+' into '+b.lower+'. What does the ray do at the boundary?';
+    labels=[[a.name],[b.name]];
+    hints=['Which of these two media has the larger refractive index?','Air has the smallest refractive index of the common media, about 1.00.','Going into an optically denser medium, a ray bends toward the normal. Going out of one, it bends away.'];
+  }else{
+    prompt='A ray passes from '+a.lower+' (n = '+n2f(a.n)+') into '+b.lower+' (n = '+n2f(b.n)+'). What does the ray do at the boundary?';
+    labels=[[a.name,'n = '+n2f(a.n)],[b.name,'n = '+n2f(b.n)]];
+    hints=['Compare the two refractive indices. Which is larger?','The medium with the larger n is the optically denser one. Is the ray entering it or leaving it?','Going into an optically denser medium, a ray bends toward the normal. Going out of one, it bends away.'];
+  }
+  if(t===0)hints=['Look at where the ray arrives. What angle does it make with the normal?','The angle of incidence here is 0°.','A ray that arrives along the normal has no angle to bend through.'];
+  const aN=mode==='speed'?'A':a.lower, bN=mode==='speed'?'B':b.lower;
+  const dense=b.n>a.n;
+  let explain;
+  if(t===0)explain='The ray meets the boundary along the normal, so the angle of incidence is 0°. The speed changes, but the direction does not.';
+  else if(mode==='speed')explain='The light '+(dense?'slows down':'speeds up')+' entering B, so B is optically '+(dense?'denser':'less dense')+' than A. The ray bends '+(dense?'toward':'away from')+' the normal.';
+  else explain='The ray goes from '+aN+' into '+bN+', an optically '+(dense?'denser':'less dense')+' medium, so it bends '+(dense?'toward':'away from')+' the normal: '+t+'° becomes '+p.toFixed(0)+'°.';
+  if((a.key==='oil'&&b.key==='water')||(a.key==='water'&&b.key==='oil'))explain+=' Oil floats on water because it has the lower mass density, yet it is optically denser. The two kinds of density are different things.';
+  const fb=ans=>{
+    if(t===0)return 'The ray arrives along the normal, so there is no angle to bend through.';
+    if(ans==='straight')return 'A ray goes straight on only when it meets the boundary along the normal, or when the two media have the same refractive index. Neither is true here.';
+    if(mode==='speed')return 'Check the link between speed and bending: slower light means an optically denser medium.';
+    if((a.key==='oil'||b.key==='oil')&&(a.key==='water'||b.key==='water'))return 'Compare the refractive indices, not which liquid floats. A larger n means optically denser, even when the liquid is lighter.';
+    return 'Check the direction of travel. The ray goes from n = '+n2f(a.n)+' to n = '+n2f(b.n)+'.';
+  };
+  const wedges=t===0?{}:{inN:{doneText:t+'°'},outN:{doneText:p.toFixed(0)+'°'}};
+  return {kind:'choice',g,labels,prompt,hints,explain,fb,answer:correct,wedges,
+    options:shuffle(['toward','away']).concat('straight').map(k=>({key:k,label:OPT[k]}))};
+}
+function reverseQ(){
+  let a,b,t,p;
+  for(;;){[a,b]=pair(null,0.3);t=ri(25,50);if(a.n*Math.sin(rad(t))/b.n>0.92)continue;p=snell(a.n,b.n,t);if(Math.abs(t-p)>=8&&p<=65)break}
+  const askFast=Math.random()<.4,g=geo(pick(FLAT),pick([1,-1]),t,p);
+  const denser=a.n>b.n?'A':'B',faster=denser==='A'?'B':'A',answer=askFast?faster:denser;
+  return {kind:'choice',g,showOut:true,labels:[['Medium A'],['Medium B']],
+    prompt:'The diagram shows a ray passing from medium A into medium B. '+(askFast?'In which medium does light travel faster?':'Which medium has the larger refractive index?'),
+    hints:['Compare the angle the ray makes with the normal in each medium.','The ray is closer to the normal in the optically denser medium.','Light travels more slowly in the optically denser medium.'],
+    explain:'The ray bends '+(b.n>a.n?'toward':'away from')+' the normal, so it is closer to the normal in medium '+denser+'. Medium '+denser+' is optically denser, with the larger n and the lower light speed.',
+    fb:ans=>ans==='same'?'If the two media had the same refractive index the ray would not bend, and this ray does.':
+      (askFast?'Light is slower, not faster, in the medium where the ray is closer to the normal.':'The larger refractive index goes with the smaller angle to the normal.'),
+    answer,wedges:{inN:{doneText:t+'°'},outN:{doneText:p.toFixed(0)+'°'}},
+    options:[{key:'A',label:'Medium A'},{key:'B',label:'Medium B'},{key:'same',label:'They are the same'}]};
+}
+function level1(){
+  const named=['water','glass','diamond'];
+  const third=Math.random()<.5
+    ?(()=>{const[a,b]=pair(pick(['dense','rare']),.15);return predictQ(a,b,'speed')})()
+    :(()=>{const m=md(pick(named)),air=md('air');return Math.random()<.5?predictQ(air,m,'name'):predictQ(m,air,'name')})();
+  const fifth=Math.random()<.5
+    ?(()=>{const[a,b]=pair(null,.15);return predictQ(a,b,'n',0)})()
+    :(Math.random()<.5?predictQ(md('oil'),md('water'),'n'):predictQ(md('water'),md('oil'),'n'));
+  const[a1,b1]=pair('dense',.15),[a2,b2]=pair('rare',.15);
+  return shuffle([predictQ(a1,b1,'n'),predictQ(a2,b2,'n'),third,reverseQ(),fifth]);
+}
+
+/* ---------- Level 2 ---------- */
+const L2KEYS=['air','water','glass','perspex','flint'];
+function goodPair(){
+  for(;;){
+    const[a,b]=pair(null,.15,L2KEYS),t=ri(24,62),x=a.n*Math.sin(rad(t))/b.n;
+    if(x>=1)continue;
+    const p=snell(a.n,b.n,t);
+    if(p>=24&&p<=64&&Math.abs(t-p)>=5)return {a,b,t,p};
+  }
+}
+const TILT=[25,35,50,65,-25,-35,-50,-65];
+const ANY=()=>{const r=Math.random();return r<.5?pick(FLAT):pick(TILT)+(Math.random()<.5?0:180)};
+function dragQ(){
+  const{a,b,t,p}=goodPair(),beta=pick(TILT)+(Math.random()<.5?0:180),s=pick([1,-1]),g=geo(beta,s,t,p);
+  const offset=pick([1,-1])*ri(32,58);
+  const alpha=(((beta+90+offset)%180)+180)%180;
+  return {kind:'drag',g,alpha,showOut:true,labels:[[a.name],[b.name]],
+    prompt:'Draw the normal. Drag the round handle, or use the slider, until the dashed line is in the correct position. Then check it.',
+    hints:['The normal passes through the point where the ray meets the boundary.','It makes an angle of 90° with the boundary.','Ignore the edges of the page. Only the boundary decides where the normal goes.'],
+    explain:'The normal is perpendicular to the boundary at the point where the ray meets it. Angles of incidence and refraction are both measured from this line.',
+    fb:()=>''};
+}
+function letterWedges(){
+  const roles=shuffle(['inN','inS','outN','outS']),L=['a','b','c','d'],w={},byRole={};
+  roles.forEach((r,i)=>{w[r]={text:L[i],letter:true};byRole[r]=L[i]});
+  return {w,byRole};
+}
+function wedgeFb(answer,ans){
+  const isIn=answer.startsWith('in'),same=ans[0]===answer[0]&&ans.startsWith(isIn?'in':'out');
+  if(same)return 'That angle is between the ray and the surface. Measure from the normal instead.';
+  if(ans.endsWith('N'))return isIn?'That angle belongs to the refracted ray, in the second medium. You need the one beside the incident ray.':'That angle belongs to the incident ray, in the first medium. You need the one beside the refracted ray.';
+  return 'That angle is on the wrong side of the boundary, and it is measured from the surface.';
+}
+function identifyQ(){
+  const{a,b,t,p}=goodPair(),g=geo(ANY(),pick([1,-1]),t,p),{w,byRole}=letterWedges(),answer=pick(['inN','outN']);
+  const nm=answer==='inN'?'angle of incidence':'angle of refraction';
+  return {kind:'wedge',g,wedges:w,byRole,showOut:true,answer,labels:[[a.name],[b.name]],
+    prompt:'Which labelled angle is the <b>'+nm+'</b>? Tap the angle on the diagram or choose a letter.',
+    hints:['Find the dashed normal first. Both of these angles are measured from it.',answer==='inN'?'The arrow shows the incident ray, travelling toward the boundary.':'The refracted ray is the one leaving the boundary.'],
+    explain:'The '+nm+' is the angle between the '+(answer==='inN'?'incident':'refracted')+' ray and the normal, so it is angle '+byRole[answer]+'.',
+    fb:ans=>wedgeFb(answer,ans)};
+}
+function advancedQ(){
+  // Several marked angles, only one of them useful. Every value on the diagram is different, so each wrong answer can be traced.
+  for(;;){
+    const{a,b,t,p:raw}=goodPair(),p=Math.round(raw),slope=pick([25,30,35,40,45,50]);
+    const inS=90-t,outS=90-p,dev=Math.abs(t-p);
+    const askIn=Math.random()<.5,target=askIn?t:p,other=askIn?p:t,useS=askIn?inS:outS,otherS=askIn?outS:inS;
+    const direct=Math.random()<DIRECT_SHARE,otherFromN=Math.random()<DIRECT_SHARE;
+    const inFromN=askIn?direct:otherFromN,outFromN=askIn?otherFromN:direct;
+    const showDev=p>t&&dev>=12&&!outFromN; // the dev wedge would sit inside a marked angle from the normal
+    const vals=[t,p,inS,outS].concat(showDev?[dev]:[]);
+    if(new Set(vals).size<vals.length)continue;
+    const beta=pick([1,-1])*slope+(Math.random()<.5?0:180),g=geo(beta,pick([1,-1]),t,p);
+    const wedges={};
+    wedges[inFromN?'inN':'inS']={text:(inFromN?t:inS)+'°'};
+    wedges[outFromN?'outN':'outS']={text:(outFromN?p:outS)+'°'};
+    if(showDev)wedges.dev={text:dev+'°',far:128};
+    const name=askIn?'angle of incidence':'angle of refraction',ray=askIn?'incident ray':'refracted ray',oRay=askIn?'refracted ray':'incident ray';
+    return {kind:'number',g,wedges,showOut:true,answer:target,labels:[[a.name],[b.name]],doneWedge:askIn?'inN':'outN',
+      extend:showDev,
+      prompt:'Light passes from '+a.lower+' into '+b.lower+'. What is the <b>'+name+'</b>? You will not need every angle marked on the diagram.',
+      hints:['Find the '+ray+' on the diagram. The other marked angles belong to something else.','Look at the angle marked beside the '+ray+'. Is it measured from the normal or from the surface?','If it is from the normal, it is already the answer. If it is from the surface, subtract it from 90°.'],
+      explain:(direct?'The angle marked beside the '+ray+' is already measured from the normal, so the '+name+' is '+target+'°. No calculation is needed.'
+        :'The '+ray+' makes '+useS+'° with the surface, so the '+name+' = 90° − '+useS+'° = '+target+'°.')+(showDev?' The dotted line shows the path the ray would take with no bending.':''),
+      fb:ans=>{
+        const is=v=>Math.abs(ans-v)<.6;
+        if(direct&&is(useS))return 'You subtracted from 90°, but the marked angle is already measured from the normal.';
+        if(is(useS))return 'You used the angle from the surface. Measure from the normal.';
+        if(is(otherS)||is(other))return 'You used the '+oRay+'. The '+name+' belongs to the '+ray+'.';
+        if(showDev&&is(dev))return 'That angle shows how far the ray changes direction. It is not measured from the normal.';
+        if(is(90+useS))return 'You added 90°. The two angles together make 90°, so subtract.';
+        return 'Use only the angle between the '+ray+' and the surface. It and the '+name+' add up to 90°.';
+      }};
+  }
+}
+// About 1 question in 3 marks the angle from the normal, so students must decide whether any calculation is needed.
+const DIRECT_SHARE=1/3;
+const CHECK_HINTS=name=>['Find the dashed normal. The '+name+' is measured from it.','Look at the marked angle. Is it measured from the normal or from the surface?','If it is from the normal, it is already the answer. If it is from the surface, subtract it from 90°.'];
+function surfaceQ(ofOut){
+  let a,b,t,p;({a,b,t,p}=goodPair());
+  const use=ofOut?p:t, intp=Math.round(use);
+  // keep the shown figure consistent with the integer value asked about
+  if(ofOut){p=intp}else{t=intp}
+  const direct=Math.random()<DIRECT_SHARE,given=direct?intp:90-intp,g=geo(ANY(),pick([1,-1]),t,p),target=ofOut?'angle of refraction':'angle of incidence';
+  const role=(ofOut?'out':'in')+(direct?'N':'S'),wedges={};wedges[role]={text:given+'°',far:62};
+  return {kind:'number',g,wedges,showOut:true,answer:intp,labels:[[a.name],[b.name]],
+    prompt:'One angle is marked on the diagram. What is the <b>'+target+'</b>?',
+    hints:CHECK_HINTS(target),
+    explain:direct?'The marked angle is already measured from the normal, so the '+target+' is '+intp+'°. No calculation is needed.'
+      :target[0].toUpperCase()+target.slice(1)+' = 90° − '+given+'° = '+intp+'°.',
+    doneWedge:ofOut?'outN':'inN',
+    fb:ans=>{
+      if(direct)return Math.abs(ans-(90-given))<.6?'You subtracted from 90°, but the marked angle is already measured from the normal.':'Check where the marked angle is measured from.';
+      if(Math.abs(ans-given)<.6)return 'You used the angle from the surface. Measure from the normal.';
+      if(Math.abs(ans-(90+given))<.6)return 'You added 90°. The two angles together make 90°, so subtract.';
+      return 'The angle from the surface and the angle from the normal add up to 90°.';
+    }};
+}
+function inclinedQ(){
+  let a,b,beta,t,p;
+  for(;;){[a,b]=pair(null,.15,L2KEYS);beta=ri(5,12)*5;t=90-beta;const x=a.n*Math.sin(rad(t))/b.n;if(x>=.97)continue;p=snell(a.n,b.n,t);if(p>=18&&p<=68)break}
+  const direct=Math.random()<DIRECT_SHARE,g=geo(-beta,1,t,p),wedges=direct?{inN:{text:t+'°',far:62}}:{inS:{text:beta+'°',far:62}};
+  return {kind:'number',g,wedges,showOut:true,answer:t,labels:[[a.name],[b.name]],doneWedge:'inN',
+    prompt:'A horizontal ray strikes a sloping surface. One angle is marked on the diagram. What is the <b>angle of incidence</b>?',
+    hints:CHECK_HINTS('angle of incidence'),
+    explain:direct?'The marked angle is already measured from the normal, so the angle of incidence is '+t+'°. No calculation is needed.'
+      :'The ray makes '+beta+'° with the surface, so the angle of incidence = 90° − '+beta+'° = '+t+'°.',
+    fb:ans=>{
+      if(direct)return Math.abs(ans-beta)<.6?'You subtracted from 90°, but the marked angle is already measured from the normal.':'Check where the marked angle is measured from.';
+      if(Math.abs(ans-beta)<.6)return 'You used the angle from the surface. Measure from the normal.';
+      if(Math.abs(ans-(90+beta))<.6)return 'You added 90°. The two angles together make 90°, so subtract.';
+      return 'The slope gives the angle between the ray and the surface. The angle of incidence is the rest of the 90°.';
+    }};
+}
+function level2(){
+  return [dragQ(),identifyQ(),surfaceQ(Math.random()<.5),inclinedQ(),advancedQ()];
+}
+
+/* ---------- shared tools for the calculation levels ---------- */
+const AIR=()=>md('air');
+const eq=lines=>'<span class="eq">'+lines.join('<br>')+'</span>';
+const matchFb=(list,ans)=>{for(const[v,msg,tol]of list){if(Number.isFinite(v)&&Math.abs(ans-v)<=(tol||.5))return msg}return null};
+const s2=x=>Math.sin(rad(x)).toFixed(3);
+const RAD_MSG='Is your calculator in degree mode? This answer comes from radian mode.';
+const ASIN_MSG='That is the value of the sine. Press sin⁻¹ to turn it into an angle.';
+function angleMistakes(n1,n2,known){
+  const x=n1*Math.sin(rad(known))/n2;
+  return [
+    [deg(Math.asin(n2*Math.sin(rad(known))/n1)),'Check which medium goes with which angle. Each n pairs with the angle in its own medium.'],
+    [x,ASIN_MSG,.01],
+    [Math.asin(n1*Math.sin(known)/n2),RAD_MSG,.02],
+    [known*n1/n2,'You used the angles directly. Snell\'s law uses the sines of the angles.']
+  ];
+}
+const nLabel=m=>[m.name,'n = '+n2f(m.n)];
+
+/* ---------- Level 3: Snell's law ---------- */
+function snellQ(a,b,cfg){
+  // cfg.find is 'out' or 'in'; cfg.fromSurface marks the known angle from the surface
+  let t,p;
+  for(;;){
+    if(cfg.find==='out'){t=ri(25,70);const x=a.n*Math.sin(rad(t))/b.n;if(x>.92)continue;p=snell(a.n,b.n,t);if(p<12)continue;break}
+    p=ri(25,70);const x=b.n*Math.sin(rad(p))/a.n;if(x>.92)continue;t=snell(b.n,a.n,p);if(t<12)continue;break
+  }
+  const findOut=cfg.find==='out',known=findOut?t:p,want=findOut?p:t,nK=findOut?a.n:b.n,nU=findOut?b.n:a.n;
+  const kRole=findOut?'in':'out',uRole=findOut?'outN':'inN',sym=findOut?'θ₂':'θ₁',name=findOut?'angle of refraction':'angle of incidence',kName=findOut?'angle of incidence':'angle of refraction';
+  const given=cfg.fromSurface?90-known:known,g=geo(cfg.tilt?pick(TILT)+(Math.random()<.5?0:180):pick(FLAT),pick([1,-1]),t,p);
+  const wedges={};wedges[kRole+(cfg.fromSurface?'S':'N')]={text:given+'°'};wedges[uRole]={text:sym};
+  const subst=findOut?n2f(a.n)+' sin '+known+'° = '+n2f(b.n)+' sin θ₂':n2f(a.n)+' sin θ₁ = '+n2f(b.n)+' sin '+known+'°';
+  const sinV=(nK*Math.sin(rad(known))/nU).toFixed(3),line2='sin '+sym+' = '+n2f(nK)+' × '+s2(known)+' ÷ '+n2f(nU)+' = '+sinV;
+  const lines=(cfg.fromSurface?[kName[0].toUpperCase()+kName.slice(1)+' = 90° − '+given+'° = '+known+'°']:[]).concat(['n₁ sin θ₁ = n₂ sin θ₂',subst,line2,sym+' = '+want.toFixed(1)+'°']);
+  const mist=angleMistakes(nK,nU,known).concat([[90-want,'You gave the angle from the surface. Angles in Snell\'s law are measured from the normal.']]);
+  if(cfg.fromSurface){mist.unshift([deg(Math.asin(nK*Math.sin(rad(given))/nU)),'You put the angle from the surface into Snell\'s law. Change it to the angle from the normal first.'])}
+  return {kind:'number',g,wedges,showOut:true,answer:want,tol:.5,doneWedge:uRole,doneText:want.toFixed(1)+'°',labels:[nLabel(a),nLabel(b)],pair:[a.n,b.n],
+    prompt:'Light passes from '+a.lower+' into '+b.lower+'. '+(cfg.fromSurface?'One angle is marked on the diagram. ':'The '+kName+' is '+known+'°. ')+'Find the <b>'+name+'</b>, '+sym+', to 1 decimal place.',
+    hints:(cfg.fromSurface?['Is the marked angle measured from the normal or from the surface? Snell\'s law needs the angle from the normal.']:[]).concat(['Start from n₁ sin θ₁ = n₂ sin θ₂, where medium 1 holds the incident ray.','Substitute: '+subst,'Rearrange: '+line2+'. Now use sin⁻¹.']),
+    explain:eq(lines),
+    fb:ans=>matchFb(mist,ans)||'Write out n₁ sin θ₁ = n₂ sin θ₂ with your numbers, then rearrange for sin '+sym+'.'};
+}
+function findNQ(){
+  const n=ri(130,180)/100,intoX=Math.random()<.5;
+  let airA,xA;
+  for(;;){
+    airA=ri(30,70);xA=Math.round(snell(1,n,airA));if(xA>=15)break;
+  }
+  const answer=Math.sin(rad(airA))/Math.sin(rad(xA)),X={key:'x',name:'Medium X',n:answer,lower:'medium X'},air=AIR();
+  const t=intoX?airA:xA,p=intoX?xA:airA,g=geo(pick(FLAT),pick([1,-1]),t,p);
+  const lab=[air.name,'n = 1.00'],labX=['Medium X','n = ?'];
+  const wedges={inN:{text:t+'°'},outN:{text:p+'°'}};
+  const lines=['n₁ sin θ₁ = n₂ sin θ₂',intoX?'1.00 × sin '+airA+'° = n × sin '+xA+'°':'n × sin '+xA+'° = 1.00 × sin '+airA+'°','n = '+s2(airA)+' ÷ '+s2(xA)+' = '+answer.toFixed(2)];
+  return {kind:'number',unit:'',g,wedges,showOut:true,answer,tol:.02,labels:intoX?[lab,labX]:[labX,lab],pair:intoX?[1,answer]:[answer,1],
+    prompt:'Light passes from '+(intoX?'air into medium X':'medium X into air')+'. The two angles from the normal are marked. Find the <b>refractive index</b> of medium X, to 2 decimal places.',
+    hints:['The refractive index of air is 1.00. Which angle is in air?','Pair each n with the angle in its own medium: 1.00 goes with '+airA+'°, n goes with '+xA+'°.','n = sin '+airA+'° ÷ sin '+xA+'°.'],
+    explain:eq(lines),
+    fb:ans=>matchFb([[1/answer,'Your ratio is upside down. A refractive index is at least 1, so check which angle is in air.',.02],[airA/xA,'You divided the angles. Divide their sines instead.',.02]],ans)||'Pair 1.00 with the angle in air and n with the angle in medium X.'};
+}
+function level3(){
+  const dense=pick(['water','glass','perspex','oil','flint','sapphire']),m1=md(dense),m2=md(pick(['water','glass','perspex','flint','sapphire']));
+  const[a,b]=pair(null,.15,['water','glass','perspex','flint','sapphire','oil']);
+  const[c,d]=pair(null,.15,['air','water','glass','perspex','flint']);
+  return [snellQ(AIR(),m1,{find:'out'}),snellQ(m2,AIR(),{find:'out'}),findNQ(),snellQ(a,b,{find:Math.random()<.5?'out':'in'}),
+    snellQ(c,d,{find:Math.random()<.5?'out':'in',fromSurface:Math.random()>=DIRECT_SHARE,tilt:true})];
+}
+
+/* ---------- Level 4: Critical angle ---------- */
+const crit=(n1,n2)=>deg(Math.asin(n2/n1));
+const critGeo=(c,flat)=>geo(flat?pick(FLAT):ANY(),pick([1,-1]),c,90);
+function critConcept(){
+  if(Math.random()<.5){
+    const m=md(pick(['water','glass','perspex','flint'])),air=AIR(),c=crit(m.n,1),g=critGeo(c,true);
+    return {kind:'choice',g,labels:[nLabel(m),nLabel(air)],outcome:'critical',answer:'along',pair:[m.n,1],wedges:{inN:{text:'c'},outN:{doneText:'90°'}},
+      prompt:'A ray in '+m.lower+' strikes the boundary with air exactly at the critical angle, c. What does the refracted ray do?',
+      hints:['The ray travels from the optically denser medium, so it bends away from the normal.','As the angle of incidence grows, the angle of refraction grows faster and reaches 90° first.'],
+      explain:'At the critical angle, the angle of refraction is 90°, so the refracted ray travels along the boundary. A weak reflected ray is also present.',
+      fb:ans=>ans==='tir'?'Total internal reflection starts only when the angle of incidence is greater than the critical angle.':'The ray still bends away from the normal here, by the largest amount possible.',
+      options:[{key:'along',label:'Travels along the boundary'},{key:'tir',label:'Is totally internally reflected'},{key:'straight',label:'Goes straight on'}]};
+  }
+  const[d,r]=pair('rare',.15,['air','water','glass','flint','sapphire']),c=crit(d.n,r.n),g=critGeo(c,true);
+  return {kind:'choice',g,noRay:true,outcome:'critical',labels:[nLabel(d),nLabel(r)],answer:'dr',pair:[d.n,r.n],wedges:{inN:{doneText:c.toFixed(1)+'°'}},
+    prompt:'Which ray can have a <b>critical angle</b> at this boundary?',
+    hints:['A critical angle needs a refracted ray that can reach 90°.','The refracted ray is further from the normal than the incident ray only when it bends away.'],
+    explain:'A critical angle exists only for light going from the optically denser medium into the optically less dense one, so here from '+d.lower+' into '+r.lower+'.',
+    fb:ans=>ans==='both'?'In one direction the ray bends toward the normal, so its refracted angle can never reach 90°.':'That ray enters the optically denser medium and bends toward the normal, so it never reaches 90°.',
+    options:shuffle([{key:'dr',label:'From '+d.lower+' into '+r.lower},{key:'rd',label:'From '+r.lower+' into '+d.lower}]).concat({key:'both',label:'Both directions'})};
+}
+function cFromNQ(){
+  const m=md(pick(['water','glass','perspex','oil','flint','sapphire','diamond'])),c=crit(m.n,1),g=critGeo(c);
+  return {kind:'number',g,showOut:true,showRefl:true,outcome:'critical',answer:c,doneWedge:'inN',doneText:c.toFixed(1)+'°',labels:[nLabel(m),nLabel(AIR())],pair:[m.n,1],
+    wedges:{inN:{text:'c'},outN:{text:'90°'}},
+    prompt:'Light in '+m.lower+' strikes the boundary with air at the critical angle. Find the <b>critical angle</b>, c, to 1 decimal place.',
+    hints:['At the critical angle, θ₂ = 90° and sin 90° = 1.','So n sin c = 1.00 × 1, which gives sin c = 1 ÷ n.','sin c = 1 ÷ '+n2f(m.n)+' = '+(1/m.n).toFixed(3)+'. Now use sin⁻¹.'],
+    explain:eq(['n sin c = 1.00 × sin 90°','sin c = 1 ÷ '+n2f(m.n)+' = '+(1/m.n).toFixed(3),'c = '+c.toFixed(1)+'°']),
+    fb:ans=>matchFb([[1/m.n,ASIN_MSG,.01],[Math.asin(1/m.n),RAD_MSG,.02],[90-c,'That angle is measured from the surface. The critical angle is measured from the normal.'],[deg(Math.sin(1/m.n)),'Use sin⁻¹, not sin, to turn the ratio into an angle.']],ans)||'At the critical angle, sin c = 1 ÷ n.'};
+}
+function nFromCQ(){
+  const c=ri(25,50),n=1/Math.sin(rad(c)),g=critGeo(c),X={name:'Medium X'};
+  return {kind:'number',unit:'',g,showOut:true,showRefl:true,outcome:'critical',answer:n,tol:.02,labels:[['Medium X','n = ?'],nLabel(AIR())],pair:[n,1],
+    wedges:{inN:{text:c+'°'},outN:{text:'90°'}},
+    prompt:'The critical angle of medium X with air is '+c+'°. Find the <b>refractive index</b> of medium X, to 2 decimal places.',
+    hints:['Use sin c = 1 ÷ n.','Rearrange it: n = 1 ÷ sin c.'],
+    explain:eq(['sin c = 1 ÷ n','n = 1 ÷ sin '+c+'° = 1 ÷ '+s2(c)+' = '+n.toFixed(2)]),
+    fb:ans=>matchFb([[Math.sin(rad(c)),'That is sin c. A refractive index cannot be less than 1, so divide 1 by this value.',.02],[1/Math.sin(c),RAD_MSG,.02],[1/rad(c),'Take the sine of the angle before you divide.',.02]],ans)||'Rearrange sin c = 1 ÷ n to make n the subject.'};
+}
+function mediumCQ(){
+  let d,r,c;
+  for(;;){[d,r]=pair('rare',.15,['water','ethanol','glass','perspex','flint','sapphire','diamond']);c=crit(d.n,r.n);if(c<=76)break}
+  const g=critGeo(c);
+  const raw=crit(d.n,1);
+  return {kind:'number',g,showOut:true,showRefl:true,outcome:'critical',answer:c,doneWedge:'inN',doneText:c.toFixed(1)+'°',labels:[nLabel(d),nLabel(r)],pair:[d.n,r.n],
+    wedges:{inN:{text:'c'},outN:{text:'90°'}},
+    prompt:'Light in '+d.lower+' strikes the boundary with '+r.lower+'. Find the <b>critical angle</b>, c, to 1 decimal place.',
+    hints:['The second medium is not air here, so sin c = 1 ÷ n does not apply.','Use n₁ sin c = n₂ sin 90°, with n₁ for the medium holding the incident ray.','sin c = '+n2f(r.n)+' ÷ '+n2f(d.n)+' = '+(r.n/d.n).toFixed(3)+'. Now use sin⁻¹.'],
+    explain:eq(['n₁ sin c = n₂ sin 90°',n2f(d.n)+' sin c = '+n2f(r.n)+' × 1','sin c = '+(r.n/d.n).toFixed(3),'c = '+c.toFixed(1)+'°']),
+    fb:ans=>matchFb([[raw,'You used sin c = 1 ÷ n, which applies only when the second medium is air. Here it is '+r.lower+'.'],[r.n/d.n,ASIN_MSG,.01],[Math.asin(r.n/d.n),RAD_MSG,.02],[90-c,'That angle is measured from the surface. The critical angle is measured from the normal.']],ans)||'Use n₁ sin c = n₂ sin 90°.'};
+}
+function critErrorQ(){
+  const[a,b]=pair('dense',.15,['water','glass','flint','sapphire']),t=ri(30,60),p=snell(a.n,b.n,t),g=geo(pick(FLAT),pick([1,-1]),t,p);
+  return {kind:'choice',g,showOut:true,labels:[nLabel(a),nLabel(b)],answer:'none',pair:[a.n,b.n],
+    prompt:'A student tries to find the critical angle for light going from '+a.lower+' into '+b.lower+' and writes sin c = '+n2f(b.n)+' ÷ '+n2f(a.n)+' = '+(b.n/a.n).toFixed(2)+'. The calculator shows Math Error. Why?',
+    hints:['What is the largest value that the sine of an angle can have?','Compare the two refractive indices. Which medium does the light enter?'],
+    explain:'Sine can never exceed 1. The light enters an optically denser medium and bends toward the normal, so its refracted ray cannot reach 90° and no critical angle exists.',
+    fb:ans=>ans==='mode'?'Calculator mode does not matter here. No angle at all has a sine greater than 1.':'The numbers are in the right place for this direction of travel. The problem is the direction itself.',
+    options:shuffle([{key:'none',label:'This direction of travel has no critical angle'},{key:'mode',label:'The calculator is in the wrong mode'},{key:'swap',label:'The student should use sin c = 1 ÷ n instead'}])};
+}
+function level4(){return [critConcept(),cFromNQ(),nFromCQ(),mediumCQ(),critErrorQ()]}
+
+/* ---------- Level 5: Total internal reflection ---------- */
+function tirOutcome(n1,n2,i){const x=n1*Math.sin(rad(i))/n2;return x>1?{tir:true,p:0}:{tir:false,p:snell(n1,n2,i)}}
+function pickI(c,above){return above?Math.min(85,Math.ceil(c)+ri(5,16)):Math.max(15,Math.floor(c)-ri(5,16))}
+function tirChoiceParts(d,r,i,c,wName){
+  const o=tirOutcome(d.n,r.n,i),above=o.tir;
+  return {o,answer:above?'tir':'refract',outcome:above?'tir':'refract',
+    explain:eq(['sin c = '+n2f(r.n)+' ÷ '+n2f(d.n)+' = '+(r.n/d.n).toFixed(3),'c = '+c.toFixed(1)+'°'])+
+      'The angle of incidence, '+i+'°, is '+(above?'greater':'smaller')+' than the critical angle, so '+(above?'all the light is reflected back: total internal reflection.':'the ray refracts out at '+o.p.toFixed(1)+'°, with a weak reflected ray as well.'),
+    fb:ans=>ans==='along'?'The ray travels along the boundary only when the angle of incidence equals the critical angle exactly.':
+      (above?'The angle of incidence is greater than the critical angle, '+c.toFixed(1)+'°, so no refracted ray can exist.':'The angle of incidence is smaller than the critical angle, '+c.toFixed(1)+'°, so a refracted ray still leaves.'),
+    wedges:Object.assign({inN:{text:i+'°'}},above?{refl:{doneText:i+'°'}}:{outN:{doneText:o.p.toFixed(1)+'°'}})};
+}
+const TIR_HINTS=(d,r)=>['Is the light travelling from the optically denser medium into the optically less dense one? It must be, for total internal reflection.','Find the critical angle: sin c = '+n2f(r.n)+' ÷ '+n2f(d.n)+'.','Compare the angle of incidence with c. Total internal reflection needs it to be greater than c.'];
+function tirPredictQ(above){
+  let d,r,c;
+  for(;;){[d,r]=pair('rare',.15,['air','water','glass','perspex','flint','sapphire']);c=crit(d.n,r.n);if(c>=28&&c<=68)break}
+  const i=pickI(c,above),g=geo(ANY(),pick([1,-1]),i,above?0:snell(d.n,r.n,i)),parts=tirChoiceParts(d,r,i,c);
+  return Object.assign({kind:'choice',g,labels:[nLabel(d),nLabel(r)],pair:[d.n,r.n],hints:TIR_HINTS(d,r),
+    prompt:'A ray in '+d.lower+' strikes the boundary with '+r.lower+' at an angle of incidence of '+i+'°. What happens?',
+    options:shuffle([{key:'refract',label:'Refracts into '+r.lower},{key:'tir',label:'Total internal reflection'}]).concat({key:'along',label:'Travels along the boundary'})},parts);
+}
+function denserTrapQ(){
+  const[a,b]=pair('dense',.15,['air','water','glass','flint']),i=ri(60,80),p=snell(a.n,b.n,i),g=geo(pick(FLAT),pick([1,-1]),i,p);
+  return {kind:'choice',g,labels:[nLabel(a),nLabel(b)],pair:[a.n,b.n],answer:'refract',outcome:'refract',wedges:{inN:{text:i+'°'},outN:{doneText:p.toFixed(1)+'°'}},
+    prompt:'A ray in '+a.lower+' strikes the boundary with '+b.lower+' at a large angle of incidence, '+i+'°. What happens?',
+    hints:['Check the direction of travel first. Which medium is optically denser?','Total internal reflection can happen only when light travels toward an optically less dense medium.'],
+    explain:'The light enters an optically denser medium, so total internal reflection cannot happen at any angle. The ray bends toward the normal and refracts at '+p.toFixed(1)+'°.',
+    fb:ans=>ans==='tir'?'Can total internal reflection happen when light enters an optically denser medium? A large angle is not enough.':'This ray arrives at '+i+'° and has an angle of refraction well under 90°, so it does not travel along the boundary.',
+    options:shuffle([{key:'refract',label:'Refracts into '+b.lower},{key:'tir',label:'Total internal reflection'}]).concat({key:'along',label:'Travels along the boundary'})};
+}
+function snellErrorQ(){
+  let d,c,i,x;
+  for(;;){d=md(pick(['water','glass','flint','sapphire']));c=crit(d.n,1);i=pickI(c,true);x=d.n*Math.sin(rad(i));if(x>=1.03)break}
+  const g=geo(pick(FLAT),pick([1,-1]),i,0);
+  return {kind:'choice',g,labels:[nLabel(d),nLabel(AIR())],pair:[d.n,1],answer:'tir',outcome:'tir',wedges:{inN:{text:i+'°'},refl:{doneText:i+'°'}},
+    prompt:'A student applies Snell\'s law to a ray in '+d.lower+' striking the boundary with air at '+i+'° and gets sin θ₂ = '+x.toFixed(2)+'. The calculator shows Math Error. What does this mean for the ray?',
+    hints:['Can any angle have a sine greater than 1?','If no angle of refraction exists, there can be no refracted ray. Where must the light go?'],
+    explain:'No angle has a sine greater than 1, so no refracted ray can exist. The angle of incidence is greater than the critical angle, '+c.toFixed(1)+'°, so all the light undergoes total internal reflection.',
+    fb:ans=>ans==='mode'?'Degree or radian mode cannot fix this. The sine of an angle never exceeds 1.':'A ray along the boundary needs sin θ₂ to equal 1 exactly. Here it is greater than 1.',
+    options:shuffle([{key:'tir',label:'Total internal reflection'},{key:'along',label:'The ray travels along the boundary'},{key:'mode',label:'The calculator must be in the wrong mode'}])};
+}
+function reflectionQ(){
+  let d,r,c,i;
+  for(;;){[d,r]=pair('rare',.15,['air','water','glass','flint']);c=crit(d.n,r.n);i=pickI(c,true);if(c<=62&&i<=70)break}
+  const direct=Math.random()<DIRECT_SHARE,given=direct?i:90-i,g=geo(ANY(),pick([1,-1]),i,0),wedges={};
+  wedges[direct?'inN':'inS']={text:given+'°'};
+  return {kind:'number',g,showRefl:true,outcome:'tir',answer:i,labels:[nLabel(d),nLabel(r)],pair:[d.n,r.n],wedges,doneWedge:'refl',
+    prompt:'This ray undergoes total internal reflection. One angle is marked on the diagram. What is the <b>angle of reflection</b>?',
+    hints:['Total internal reflection obeys the law of reflection, so Snell\'s law is not needed.','The angle of reflection equals the angle of incidence.','Is the marked angle measured from the normal or from the surface?'],
+    explain:(direct?'The marked angle is already the angle of incidence.':'The angle of incidence = 90° − '+given+'° = '+i+'°.')+' The angle of reflection equals the angle of incidence, so it is '+i+'°.',
+    fb:ans=>direct?(Math.abs(ans-(90-given))<.6?'You subtracted from 90°, but the marked angle is already measured from the normal.':'The angle of reflection equals the angle of incidence.'):
+      (Math.abs(ans-given)<.6?'You used the angle from the surface. Measure from the normal.':'First find the angle of incidence, then use the law of reflection.')};
+}
+function semiQ(above){
+  const d=md(pick(['glass','perspex','flint'])),r=AIR(),c=crit(d.n,1),i=pickI(c,above),s=pick([1,-1]),g=geo(0,s,i,above?0:snell(d.n,1,i)),parts=tirChoiceParts(d,r,i,c);
+  const bg='<rect class="m1" width="480" height="340"/><path class="m2" d="M90 170 A150 150 0 0 1 390 170 Z"/><path class="bd" fill="none" d="M90 170 A150 150 0 0 1 390 170 Z"/><line class="bd" x1="90" y1="170" x2="390" y2="170"/>'+
+    textBlock(240-s*118,262,[d.name+' block','n = '+n2f(d.n)])+textBlock(240-s*118,310,['Air, n = 1.00']);
+  return Object.assign({kind:'choice',g,bg,labels:[],pair:[d.n,1],hints:['The ray aims at the centre, so it crosses the curved surface along a radius, which is the normal there. It does not bend on the way in.'].concat(TIR_HINTS(d,r).slice(1)),
+    prompt:'A ray aimed at the centre of a semicircular '+d.lower+' block (n = '+n2f(d.n)+') strikes the flat face at an angle of incidence of '+i+'°. What happens at the flat face?',
+    options:shuffle([{key:'refract',label:'Refracts into the air'},{key:'tir',label:'Total internal reflection'}]).concat({key:'along',label:'Travels along the flat face'})},parts);
+}
+const prismBg=(d)=>'<rect class="m1" width="480" height="340"/><polygon class="m2" points="100,30 380,310 100,310"/><polygon class="bd" fill="none" points="100,30 380,310 100,310"/>'+
+  '<polyline class="sq" style="stroke:var(--boundary)" points="100,294 116,294 116,310"/>'+
+  textBlock(185,285,d)+textBlock(380,70,['Air','n = 1.00']);
+function prismQ(){
+  if(Math.random()<.4){
+    const ans=1/Math.sin(rad(45)),g=geo(225,-1,45,0);
+    return {kind:'number',unit:'',g,bg:prismBg(['Prism','n = ?']),showRefl:true,outcome:'tir',answer:ans,tol:.02,labels:[],pair:[1.5,1],doneWedge:'inN',wedges:{},
+      prompt:'A ray enters a right-angled isosceles prism at 90° to a short face, then meets the long face. Find the <b>smallest refractive index</b> the prism can have and still give total internal reflection at the long face, to 2 decimal places.',
+      hints:['The ray enters along the normal, so it does not bend. Use the 45° corner to find its angle of incidence at the long face.','The angle of incidence is 45°. At the limit this equals the critical angle.','sin 45° = 1 ÷ n.'],
+      doneText:'45°',
+      explain:eq(['Angle of incidence = 45°','At the limit, c = 45°','n = 1 ÷ sin 45° = 1.41']),
+      fb:a=>matchFb([[Math.sin(rad(45)),'That is sin 45°. A refractive index cannot be less than 1, so divide 1 by this value.',.02],[1/Math.sin(45),RAD_MSG,.02]],a)||'Set the critical angle equal to the 45° angle of incidence, then use sin c = 1 ÷ n.'};
+  }
+  const m=md(pick(['glass','perspex','flint','water','ethanol'])),c=crit(m.n,1),tir=c<45,g=geo(225,-1,45,tir?0:snell(m.n,1,45));
+  const name=m.key==='water'||m.key==='ethanol'?'A hollow prism filled with '+m.lower:'A '+m.lower+' prism';
+  return {kind:'choice',g,bg:prismBg(nLabel(m)),labels:[],pair:[m.n,1],answer:tir?'tir':'refract',outcome:tir?'tir':'refract',
+    wedges:Object.assign({inN:{doneText:'45°'}},tir?{refl:{doneText:'45°'}}:{outN:{doneText:g.p.toFixed(1)+'°'}}),
+    prompt:name+' (n = '+n2f(m.n)+') has angles of 45°, 45° and 90°. A ray enters at 90° to a short face. What happens at the long face?',
+    hints:['The ray enters along the normal, so it does not bend at the short face.','Use the 45° corner: the angle of incidence at the long face is 45°.','Compare 45° with the critical angle: sin c = 1 ÷ '+n2f(m.n)+'.'],
+    explain:eq(['sin c = 1 ÷ '+n2f(m.n),'c = '+c.toFixed(1)+'°'])+'The angle of incidence, 45°, is '+(tir?'greater':'smaller')+' than c, so '+(tir?'the ray undergoes total internal reflection and turns through 90°.':'the ray refracts out through the long face at '+g.p.toFixed(1)+'°.'),
+    fb:a=>tir?'45° is greater than the critical angle, '+c.toFixed(1)+'°, so no refracted ray can leave.':'45° is smaller than the critical angle, '+c.toFixed(1)+'°, so the ray still refracts out.',
+    options:shuffle([{key:'tir',label:'Total internal reflection'},{key:'refract',label:'Refracts out through the long face'}])};
+}
+function fibreQ(){
+  const[n1,n2]=pick([[1.50,1.40],[1.60,1.45],[1.55,1.40],[1.50,1.35],[1.62,1.50]]),c=crit(n1,n2);
+  const bg='<rect class="m1" width="480" height="340"/><rect class="m2" y="170" width="480" height="155"/><line class="bd" x1="0" y1="170" x2="480" y2="170"/><line class="bd" x1="0" y1="325" x2="480" y2="325"/>'+
+    textBlock(110,62,['Cladding','n = '+n2f(n2)])+textBlock(110,285,['Core','n = '+n2f(n1)]);
+  const mode=pick(['choice','smallest','axis']);
+  const core={name:'Core',n:n1,lower:'the core'},clad={name:'Cladding',n:n2,lower:'the cladding'};
+  const lines=['sin c = '+n2f(n2)+' ÷ '+n2f(n1)+' = '+(n2/n1).toFixed(3),'c = '+c.toFixed(1)+'°'];
+  if(mode==='choice'){
+    const above=Math.random()<.5,i=above?Math.min(85,Math.ceil(c)+ri(4,12)):Math.floor(c)-ri(4,8),o=tirOutcome(n1,n2,i),g=geo(180,-1,i,o.tir?0:o.p);
+    return {kind:'choice',g,bg,inLen:155/Math.cos(rad(i)),labels:[],pair:[n1,n2],answer:o.tir?'tir':'refract',outcome:o.tir?'tir':'refract',
+      wedges:Object.assign({inN:{text:i+'°'}},o.tir?{}:{outN:{doneText:o.p.toFixed(1)+'°'}}),
+      prompt:'An optical fibre has a core with n = '+n2f(n1)+' and cladding with n = '+n2f(n2)+'. A ray in the core strikes the wall at an angle of incidence of '+i+'°. What happens?',
+      hints:['The core is optically denser than the cladding, so total internal reflection is possible.','Find the critical angle: sin c = '+n2f(n2)+' ÷ '+n2f(n1)+'.','Compare '+i+'° with c.'],
+      explain:eq(lines)+'The angle of incidence, '+i+'°, is '+(o.tir?'greater':'smaller')+' than c, so the ray '+(o.tir?'stays in the core by total internal reflection.':'escapes into the cladding, and the signal weakens.'),
+      fb:a=>o.tir?i+'° is greater than the critical angle, '+c.toFixed(1)+'°, so the ray is reflected back into the core.':i+'° is smaller than the critical angle, '+c.toFixed(1)+'°, so the ray refracts into the cladding.',
+      options:shuffle([{key:'tir',label:'Stays in the core by total internal reflection'},{key:'refract',label:'Escapes into the cladding'}])};
+  }
+  const i=Math.min(85,Math.ceil(c)+8),g=geo(180,-1,i,0),axis=mode==='axis',ans=axis?90-c:c;
+  return {kind:'number',g,bg,inLen:155/Math.cos(rad(i)),showRefl:true,outcome:'tir',answer:ans,labels:[],pair:[n1,n2],wedges:{},
+    prompt:'An optical fibre has a core with n = '+n2f(n1)+' and cladding with n = '+n2f(n2)+'. '+(axis?'What is the <b>largest angle a ray can make with the fibre axis</b> and still undergo total internal reflection at the wall? The axis runs parallel to the wall. Answer':'What is the <b>smallest angle of incidence</b> at the wall that gives total internal reflection? Answer')+' to 1 decimal place.',
+    hints:['Find the critical angle at the wall: sin c = '+n2f(n2)+' ÷ '+n2f(n1)+'.'].concat(axis?['The angle with the axis equals the angle with the wall. A ray at the critical angle makes 90° − c with the wall.']:['Total internal reflection begins just above the critical angle.']),
+    explain:eq(lines.concat(axis?['Largest angle with the axis = 90° − '+c.toFixed(1)+'° = '+ans.toFixed(1)+'°']:['Smallest angle of incidence ≈ '+c.toFixed(1)+'°'])),
+    fb:a=>matchFb([[crit(n1,1),'You used sin c = 1 ÷ n. The second medium is the cladding, not air.'],[n2/n1,ASIN_MSG,.01],[Math.asin(n2/n1),RAD_MSG,.02],[axis?c:90-c,axis?'That is the critical angle, measured from the normal. The angle with the axis is measured from the wall direction.':'That angle is measured from the wall. Angles of incidence are measured from the normal.']],a)||'Find the critical angle using the core and cladding values.'};
+}
+function level5(){
+  const coin=()=>Math.random()<.5;
+  return [tirPredictQ(coin()),coin()?denserTrapQ():snellErrorQ(),coin()?reflectionQ():semiQ(coin()),prismQ(),fibreQ()];
+}
+
+/* ---------- app state ---------- */
+const LEVELS=[{name:'Which way does it bend?',make:level1},{name:'Finding the angles',make:level2},{name:'Snell\'s law',make:level3},{name:'Critical angle',make:level4},{name:'Total internal reflection',make:level5}];
+const PASS=4;
+let prog=store.get(); prog.best=LEVELS.map((_,i)=>(prog.best&&prog.best[i])||0);
+const teacher=location.hash==='#teacher';
+let cur=0;while(cur<LEVELS.length-1&&prog.best[cur]>=PASS)cur++;
+let round=null;
+const stage=document.getElementById('stage'),ladder=document.getElementById('ladder');
+const LOCKS_ON=true; // set to true to make students pass each level before the next one opens
+const unlocked=i=>!LOCKS_ON||i===0||teacher||prog.best[i-1]>=PASS;
+
+function renderLadder(){
+  ladder.innerHTML=LEVELS.map((l,i)=>{
+    const open=unlocked(i),passed=prog.best[i]>=PASS;
+    const state=!open?'Locked':passed?'✓ Best '+prog.best[i]+'/5':prog.best[i]?'Best '+prog.best[i]+'/5':'Not tried';
+    return '<button type="button" class="rung'+(passed?' passed':'')+'" data-l="'+i+'"'+(open?'':' disabled')+(i===cur?' aria-current="true"':'')+' aria-label="Level '+(i+1)+': '+l.name+'. '+state+'"><b>Level '+(i+1)+'</b><span class="rname">'+l.name+'</span><small>'+state+'</small></button>';
+  }).join('');
+}
+function start(i){cur=i;round={qs:LEVELS[i].make(),i:0,res:[]};renderLadder();renderQ();
+  document.getElementById('explorer').hidden=i<3;}
+function pips(){
+  return '<div class="pips" aria-label="Question '+(round.i+1)+' of 5">'+round.qs.map((_,k)=>{
+    const r=round.res[k],c=r===true?'ok':r===false?'bad':k===round.i?'now':'';
+    return '<span class="pip '+c+'">'+(r===true?'✓':r===false?'✗':k+1)+'</span>'}).join('')+'</div>';
+}
+function renderQ(){
+  const q=round.qs[round.i];q.hintN=0;q.done=false;
+  stage.innerHTML='<section class="bench"><div class="meta"><span>LEVEL '+(cur+1)+' · QUESTION '+(round.i+1)+' OF 5</span>'+pips()+'</div>'+
+    '<div class="fig" id="fig"></div><div class="prompt"><p>'+gloss(q.prompt)+'</p></div>'+
+    '<div class="controls" id="controls"></div><div class="feedback" id="feedback" aria-live="polite"></div></section>';
+  drawNow(q);renderControls(q);renderHelp(q);
+}
+function drawNow(q){
+  document.getElementById('fig').innerHTML=drawFig(q,q.done);
+  if(q.kind==='wedge'&&!q.done){
+    document.querySelectorAll('.wedge[data-role]').forEach(el=>el.addEventListener('click',()=>answer(q,el.dataset.role)));
+  }
+  if(q.kind==='drag'&&!q.done)bindDrag(q);
+}
+function renderControls(q){
+  const c=document.getElementById('controls');
+  if(q.kind==='choice'){
+    c.innerHTML=q.options.map(o=>'<button type="button" class="opt" id="opt-'+o.key+'" data-k="'+o.key+'">'+gloss(o.label)+'</button>').join('');
+    c.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>answer(q,b.dataset.k)));
+  }else if(q.kind==='wedge'){
+    const order=['a','b','c','d'],rev={};Object.keys(q.byRole).forEach(r=>rev[q.byRole[r]]=r);
+    c.innerHTML='<div class="letters">'+order.map(l=>'<button type="button" class="opt" id="opt-'+l+'" data-k="'+rev[l]+'" aria-label="Angle '+l+'">'+l+'</button>').join('')+'</div>';
+    c.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>answer(q,b.dataset.k)));
+  }else if(q.kind==='number'){
+    c.innerHTML='<form id="num-form" class="row"><label class="answer" for="num-in"><input id="num-in" inputmode="decimal" autocomplete="off" aria-label="Your answer">'+(q.unit===undefined?'°':q.unit)+'</label><button class="primary" type="submit">Check answer</button></form><p class="err" id="num-err"></p>';
+    document.getElementById('num-form').addEventListener('submit',e=>{e.preventDefault();
+      const v=parseFloat(document.getElementById('num-in').value.replace('°','').trim());
+      if(isNaN(v)){document.getElementById('num-err').textContent=q.unit===''?'Type your answer as a number, such as 1.50.':'Type your answer as a number of degrees, such as 40.';return}
+      answer(q,v)});
+    if(window.matchMedia('(min-width:761px)').matches)document.getElementById('num-in').focus();
+  }else{
+    c.innerHTML='<label class="slide" for="normal-angle">Rotate your line<input type="range" id="normal-angle" min="0" max="179" step="1" value="'+Math.round(q.alpha)+'"></label><div class="row"><button class="primary" type="button" id="drag-check">Check my normal</button></div>';
+    document.getElementById('normal-angle').addEventListener('input',e=>setAlpha(q,+e.target.value));
+    document.getElementById('drag-check').addEventListener('click',()=>answer(q,q.alpha));
+  }
+}
+function setAlpha(q,a){
+  q.alpha=((a%180)+180)%180;
+  document.getElementById('drag-line').innerHTML=lineAt(q.alpha,'mine');
+  const h=document.getElementById('drag-handle');
+  h.setAttribute('cx',(P[0]+126*Math.cos(rad(q.alpha))).toFixed(1));
+  h.setAttribute('cy',(P[1]+126*Math.sin(rad(q.alpha))).toFixed(1));
+  const s=document.getElementById('normal-angle');if(s&&+s.value!==Math.round(q.alpha))s.value=Math.round(q.alpha)%180;
+}
+function bindDrag(q){
+  const svg=document.getElementById('fig-svg');let on=false;
+  const move=e=>{
+    const r=svg.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*480-P[0],y=(e.clientY-r.top)/r.height*340-P[1];
+    if(Math.hypot(x,y)<8)return;
+    setAlpha(q,deg(Math.atan2(y,x)));
+  };
+  svg.addEventListener('pointerdown',e=>{on=true;try{svg.setPointerCapture(e.pointerId)}catch(_){ }move(e);e.preventDefault()});
+  svg.addEventListener('pointermove',e=>{if(on)move(e)});
+  ['pointerup','pointercancel'].forEach(t=>svg.addEventListener(t,()=>{on=false}));
+}
+function renderHelp(q){
+  const f=document.getElementById('feedback');
+  const shown=q.hints.slice(0,q.hintN).map(h=>'<li>'+gloss(h)+'</li>').join('');
+  const left=q.hints.length-q.hintN;
+  f.innerHTML=(shown?'<ul class="hints">'+shown+'</ul>':'')+(left>0?'<button type="button" class="hintbtn" id="hint-btn">'+(q.hintN?'Show another hint':'Show a hint')+' ('+left+' left)</button>':'');
+  const b=document.getElementById('hint-btn');
+  if(b)b.addEventListener('click',()=>{q.hintN++;renderHelp(q);const nb=document.getElementById('hint-btn');if(nb)nb.focus()});
+}
+function judge(q,ans){
+  if(q.kind==='number')return Math.abs(ans-q.answer)<=(q.tol||.5);
+  if(q.kind==='drag'){const d=normalOff(q,ans);return d<=5}
+  return ans===q.answer;
+}
+function normalOff(q,a){ // degrees away from true perpendicular
+  const d=(((a-q.g.b)%180)+180)%180;
+  return Math.abs(d-90);
+}
+function dragFb(q,a){
+  const d=(((a-q.g.b)%180)+180)%180,withSurface=Math.min(d,180-d);
+  const rayA=((deg(Math.atan2(q.g.dIn[1],q.g.dIn[0]))%180)+180)%180;
+  const rd=Math.abs(rayA-a),nearRay=Math.min(rd,180-rd)<=6;
+  const measured='Your line makes '+withSurface.toFixed(0)+'° with the boundary. It should make 90°. ';
+  if(nearRay)return measured+'You lined it up with the ray. The normal is set by the boundary, not by the ray.';
+  if(Math.abs(a-90)<=6)return measured+'You drew it straight up the page. The normal is perpendicular to the boundary, which is sloping here.';
+  if(a<=6||a>=174)return measured+'You drew it level across the page. Line it up with the boundary instead, at 90°.';
+  return measured;
+}
+function answer(q,ans){
+  if(q.done)return;
+  q.done=true;q.chosen=ans;
+  const ok=judge(q,ans);q.correct=ok;round.res[round.i]=ok;
+  if(q.kind==='number'&&q.doneWedge){q.wedges=Object.assign({},q.wedges);q.wedges[q.doneWedge]={text:q.doneText||(q.answer+'°')}}
+  if(q.kind==='drag'){q.alpha=ans}
+  drawNow(q);
+  // lock controls
+  document.querySelectorAll('#controls .opt').forEach(b=>{b.disabled=true;
+    if(b.dataset.k===String(q.answer))b.classList.add('right');
+    else if(b.dataset.k===String(ans))b.classList.add('wrong');});
+  const ni=document.getElementById('num-in');if(ni){ni.readOnly=true;document.getElementById('num-err').textContent='';document.querySelector('#num-form button').disabled=true}
+  const sl=document.getElementById('normal-angle');if(sl)sl.disabled=true;
+  const dc=document.getElementById('drag-check');if(dc)dc.disabled=true;
+  const piph=document.querySelector('.pips');if(piph)piph.outerHTML=pips();
+  const why=ok?'':(q.kind==='drag'?dragFb(q,ans):q.fb(ans));
+  const last=round.i===round.qs.length-1;
+  document.getElementById('feedback').innerHTML='<div class="verdict '+(ok?'ok':'bad')+'"><h2>'+(ok?'✓ Correct':'✗ Not quite')+'</h2>'+
+    (why?'<p>'+gloss(why)+'</p>':'')+'<p>'+gloss(q.explain)+'</p></div>'+
+    '<div class="row"><button class="primary" type="button" id="next-btn">'+(last?'See my score':'Next question')+'</button></div>';
+  const nb=document.getElementById('next-btn');
+  nb.addEventListener('click',()=>{if(last)finish();else{round.i++;renderQ();window.scrollTo({top:stage.offsetTop-8})}});
+  if(window.matchMedia('(min-width:761px)').matches)nb.focus();
+}
+function finish(){
+  const score=round.res.filter(Boolean).length,passed=score>=PASS;
+  if(score>prog.best[cur]){prog.best[cur]=score;store.set(prog)}
+  renderLadder();
+  const hasNext=cur+1<LEVELS.length;
+  let msg,btn='';
+  if(passed&&hasNext){msg='Level '+(cur+2)+' is now open.';btn='<button class="primary" type="button" id="go-next">Go to Level '+(cur+2)+'</button>'}
+  else if(passed){msg='You have finished all five levels, from the direction of bending to total internal reflection.'}
+  else{msg='You need '+PASS+' out of 5 to move on. A new set has different numbers and diagrams.'}
+  stage.innerHTML='<section class="result"><h2>'+score+' out of 5</h2><p>'+msg+'</p><div class="pips">'+round.res.map(r=>'<span class="pip '+(r?'ok':'bad')+'">'+(r?'✓':'✗')+'</span>').join('')+'</div><div class="row">'+btn+'<button class="'+(passed&&hasNext?'ghost':'primary')+'" type="button" id="again">'+(passed?'Practise this level again':'Try a new set')+'</button></div></section>';
+  document.getElementById('again').addEventListener('click',()=>start(cur));
+  const g=document.getElementById('go-next');if(g)g.addEventListener('click',()=>start(cur+1));
+}
+ladder.addEventListener('click',e=>{const b=e.target.closest('.rung');if(b&&!b.disabled)start(+b.dataset.l)});
+const zhBtn=document.getElementById('zh-toggle');
+function setZh(on){document.body.classList.toggle('show-zh',on);zhBtn.setAttribute('aria-pressed',on);zhBtn.textContent=on?'Hide 中文 terms':'Show 中文 terms'}
+zhBtn.addEventListener('click',()=>{prog.zh=!prog.zh;store.set(prog);setZh(prog.zh)});
+setZh(!!prog.zh);
+const resetBtn=document.getElementById('reset');let armed=false;
+resetBtn.addEventListener('click',()=>{
+  if(!armed){armed=true;resetBtn.textContent='Click again to reset';setTimeout(()=>{armed=false;resetBtn.textContent='Reset my progress'},3000);return}
+  armed=false;resetBtn.textContent='Reset my progress';prog.best=LEVELS.map(()=>0);store.set(prog);start(0);
+});
+
+/* ---------- ray explorer ---------- */
+function fresnel(n1,n2,i,p){
+  const ci=Math.cos(rad(i)),cp=Math.cos(rad(p));
+  const rs=(n1*ci-n2*cp)/(n1*ci+n2*cp),rp=(n1*cp-n2*ci)/(n1*cp+n2*ci);
+  return (rs*rs+rp*rp)/2;
+}
+function renderExplorer(){
+  const[ka,kb]=document.getElementById('ex-pair').value.split(','),a=md(ka),b=md(kb),i=+document.getElementById('ex-angle').value;
+  const x=a.n*Math.sin(rad(i))/b.n,tir=x>1,p=tir?0:deg(Math.asin(x)),g=geo(0,1,i,p);
+  const R=tir?1:fresnel(a.n,b.n,i,p);
+  const q={kind:'number',g,labels:[nLabel(a),nLabel(b)],showOut:!tir,outcome:tir?'tir':'refract',showRefl:true,reflOp:tir?1:Math.max(.08,Math.sqrt(R)),
+    wedges:i?Object.assign({inN:{text:i+'°'}},tir?{}:{outN:{text:p.toFixed(0)+'°'}}):{}};
+  document.getElementById('ex-fig').innerHTML=drawFig(q,false).replace(' id="fig-svg"','');
+  document.getElementById('ex-angle-val').textContent=i+'°';
+  const c=a.n>b.n?crit(a.n,b.n):null;
+  document.getElementById('ex-read').innerHTML=gloss('sin θ₂ = '+n2f(a.n)+' × sin '+i+'° ÷ '+n2f(b.n)+' = <b>'+x.toFixed(3)+'</b><br>'+
+    (tir?'This is greater than 1, so a calculator shows Math Error. No refracted ray exists: total internal reflection.':'Angle of refraction = '+p.toFixed(1)+'°. About '+Math.round(R*100)+'% of the light reflects.')+'<br>'+
+    (c?'Critical angle = '+c.toFixed(1)+'°.':'This ray enters an optically denser medium, so it has no critical angle.'));
+}
+document.getElementById('ex-pair').addEventListener('input',renderExplorer);
+document.getElementById('ex-angle').addEventListener('input',renderExplorer);
+renderExplorer();
+window.__ladder={level1,level2,level3,level4,level5,judge,normalOff};
+start(cur);
+})();
+</script>
+</body></html>
