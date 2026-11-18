@@ -72,7 +72,22 @@ button,select,input{font:inherit;color:inherit}
 .strip label{display:flex;gap:6px;align-items:center;font-weight:700}
 select{min-height:40px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--panel);font-weight:400}
 .note{color:var(--muted);font-size:.85rem}
-.stats{font:700 .78rem var(--f-mono);display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;font-variant-numeric:tabular-nums}
+.stats{font:700 .78rem var(--f-mono);display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-variant-numeric:tabular-nums}
+/* student name + scores, as in Lens Ray Diagram */
+.record{display:flex;flex-wrap:wrap;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:5px 6px;min-width:0;max-width:100%}
+.record .stats>span,.record .score>span{background:var(--bg)}
+.record b{color:var(--ink);font-weight:700}
+.nameform{display:flex;gap:6px;align-items:center;flex-wrap:wrap;min-width:0}
+.nameform input{font:inherit;font-size:.9rem;min-height:40px;width:min(250px,62vw);padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.nameform input[aria-invalid="true"]{border-color:var(--bad)}
+.nameform button,.nameask button{min-height:40px;padding:6px 12px}
+.nameask{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:.88rem;padding-left:4px}
+.nameerr{flex-basis:100%;font-size:.8rem;color:var(--bad);padding:0 4px}
+.nametag{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:.95rem;padding:4px 10px;border-radius:999px;background:var(--accent-soft);color:var(--ink);overflow-wrap:anywhere}
+.nametag svg{width:14px;height:14px;flex:none;stroke:var(--accent)}
+.record{margin-left:auto}
+.record .btn{font-size:.85rem}
+.stats .btn{min-height:28px}
 .stats span{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
 
 .drawer{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
@@ -171,6 +186,8 @@ html.proj .paper svg{max-height:70vh;max-width:none!important}
 html.proj .stage{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
 html.proj .levels,html.proj .strip label,html.proj details{display:none}
 html.proj .ansin{display:none}
+html.proj .nameform,html.proj .nameask,html.proj .nameerr,html.proj .nametag{display:none!important}
+html.proj .record{background:none;border:0;padding:0}
 @media (max-width:860px){html.proj{font-size:16px}html.proj .stage{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
@@ -217,7 +234,20 @@ html.proj .ansin{display:none}
         <option value="X">Mixed</option><option value="V">Find the value</option><option value="R">Find the ratio</option><option value="T">Complete the table</option><option value="M">DSE-style MC</option>
       </select></label>
     <span class="note" id="fmtNote"></span>
-    <div class="stats" id="stats" aria-live="polite"></div>
+    <div class="record" id="record">
+        <form class="nameform" id="nameForm" novalidate>
+          <input id="nameIn" autocomplete="off" autocapitalize="words" spellcheck="false" aria-describedby="nameErr">
+          <button class="btn" type="submit" id="nameBtn"></button>
+        </form>
+        <div class="nameask" id="nameAsk" hidden>
+          <span id="nameAskTxt"></span>
+          <button class="btn primary" type="button" id="nameYes"></button>
+          <button class="btn" type="button" id="nameEdit"></button>
+        </div>
+        <span class="nametag" id="nameTag" hidden><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span id="nameTagTxt"></span></span>
+        <div class="stats" id="stats" aria-live="polite"></div>
+        <span class="nameerr" id="nameErr" hidden></span>
+    </div>
   </div>
 
   <main class="stage">
@@ -950,7 +980,7 @@ function renderLevels(){
 function renderStats(){
   const parts=[];
   if(S.cs){const r=Object.values(S.results);parts.push(L(`Question ${S.cs.i+1} of ${SET_SIZE}`,`第 ${S.cs.i+1} 題，共 ${SET_SIZE} 題`),L(`First-try correct ${r.filter(x=>x).length}`,`首次答對 ${r.filter(x=>x).length} 題`))}
-  else parts.push(L(`First-try correct ${S.score.right} of ${S.score.total}`,`首次答對 ${S.score.right} / ${S.score.total}`));
+  else parts.push(`${L('Done','已完成')} <b>${S.score.total}</b>`,`${L('First-try correct','首次答對')} <b>${S.score.right}</b>`);
   $('stats').innerHTML=parts.map(p=>`<span>${p}</span>`).join('')+(S.cs?`<button class="btn" id="bLeave" style="min-height:28px;padding:2px 10px">${L('Leave set','離開練習')}</button>`:'');
 }
 function currentView(){
@@ -1134,8 +1164,56 @@ function applyStatic(){
   $('codeIn').setAttribute('aria-label',L('Class code','班級代碼'));
   $('levels').setAttribute('aria-label',L('Level','程度'));
   if(!$('codeErr').hidden)$('codeErr').textContent=codeErrText();
+  if(window.applyNameLang)window.applyNameLang();
 }
 const codeErrText=()=>L('That code does not look right. It has this form: 2X-K7QF.','代碼格式不正確。正確格式如：2X-K7QF。');
+
+/* ---------- student name ----------
+   Same format and flow as Lens Ray Diagram: "3A03 Chan Tai Man", confirm once, then locked beside the scores.
+   Deliberately NOT saved: reloading the page clears the name together with the scores. */
+(function(){
+  const g=id=>document.getElementById(id);
+  const TX={
+    en:{ph:'Class, no. and name: 3A03 Chan Tai Man',btn:'Enter',label:'Your class, class number and name',
+        err:'Use this format: class, 2-digit class number, then your name, e.g. 3A03 Chan Tai Man.',
+        ask:n=>`Is this right? <b>${n}</b> You can’t change it after this.`,yes:'Yes, confirm',edit:'Edit'},
+    zh:{ph:'班別、學號及姓名：3A03 Chan Tai Man',btn:'輸入',label:'你的班別、學號及姓名',
+        err:'請用這個格式：班別、兩位數學號，然後是姓名，例如 3A03 Chan Tai Man。',
+        ask:n=>`確定是 <b>${n}</b> 嗎？確定後不能再更改。`,yes:'確定',edit:'修改'}};
+  const T=()=>TX[(LANG)==='zh'?'zh':'en'];
+  let pending=null;
+  const escH=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function parseName(raw){
+    const m=raw.trim().replace(/\s+/g,' ').match(/^([1-6])\s?([A-Za-z])\s?(\d{2})\s+(\S.*)$/);
+    if(!m) return null;
+    const name=m[4].split(' ').map(w=>/^[A-Za-z]/.test(w)?w[0].toUpperCase()+w.slice(1).toLowerCase():w).join(' ');
+    return `${m[1]}${m[2].toUpperCase()}${m[3]} ${name}`;
+  }
+  g('nameForm').addEventListener('submit',e=>{
+    e.preventDefault();e.stopPropagation();
+    const n=parseName(g('nameIn').value);
+    if(!n){g('nameErr').textContent=T().err;g('nameErr').hidden=false;g('nameIn').setAttribute('aria-invalid','true');g('nameIn').focus();return;}
+    g('nameErr').hidden=true;g('nameIn').removeAttribute('aria-invalid');
+    pending=n;g('nameAskTxt').innerHTML=T().ask(escH(n));
+    g('nameForm').hidden=true;g('nameAsk').hidden=false;g('nameYes').focus();
+  });
+  g('nameIn').addEventListener('input',()=>{if(!g('nameErr').hidden){g('nameErr').hidden=true;g('nameIn').removeAttribute('aria-invalid');}});
+  g('nameEdit').addEventListener('click',()=>{pending=null;g('nameAsk').hidden=true;g('nameForm').hidden=false;g('nameIn').focus();});
+  g('nameYes').addEventListener('click',()=>{
+    const n=pending;pending=null;
+    g('nameAsk').hidden=true;g('nameForm').remove();   // gone for good until the page is reloaded
+    g('nameTagTxt').textContent=n;g('nameTag').title=n;g('nameTag').hidden=false;
+  });
+  window.applyNameLang=function(){
+    const t=T();
+    if(g('nameIn')){g('nameIn').placeholder=t.ph;g('nameIn').setAttribute('aria-label',t.label);g('nameBtn').textContent=t.btn;}
+    g('nameYes').textContent=t.yes;g('nameEdit').textContent=t.edit;
+    if(pending)g('nameAskTxt').innerHTML=t.ask(escH(pending));
+    if(!g('nameErr').hidden)g('nameErr').textContent=t.err;
+  };
+  window.applyNameLang();
+})();
+
 function setLang(z){
   if(z===LANG)return;
   LANG=z;

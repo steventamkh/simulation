@@ -10,6 +10,7 @@
     --accent:#1971c2; --accent-soft:#e7f1fb; --ok:#2b8a3e; --bad:#c92a2a;
   }
   *{box-sizing:border-box}
+  [hidden]{display:none!important}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"PingFang HK","Microsoft JhengHei","Noto Sans HK",sans-serif;font-size:15px;line-height:1.4}
   button{font:inherit;cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 12px;color:var(--ink)}
   button:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
@@ -28,6 +29,20 @@
   .mode button.on{background:#fff;color:var(--accent);box-shadow:0 1px 3px rgba(0,0,0,.15)}
   .topright{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
   .lang button{padding:8px 16px}
+/* student name + scores, as in Lens Ray Diagram */
+.record{display:flex;flex-wrap:wrap;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:5px 6px;min-width:0;max-width:100%}
+.record .stats>span,.record .score>span{background:var(--bg)}
+.record b{color:var(--ink);font-weight:700}
+.nameform{display:flex;gap:6px;align-items:center;flex-wrap:wrap;min-width:0}
+.nameform input{font:inherit;font-size:.9rem;min-height:40px;width:min(250px,62vw);padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.nameform input[aria-invalid="true"]{border-color:var(--bad)}
+.nameform button,.nameask button{min-height:40px;padding:6px 12px}
+.nameask{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:.88rem;padding-left:4px}
+.nameerr{flex-basis:100%;font-size:.8rem;color:var(--bad);padding:0 4px}
+.nametag{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:.95rem;padding:4px 10px;border-radius:999px;background:var(--accent-soft);color:var(--ink);overflow-wrap:anywhere}
+.nametag svg{width:14px;height:14px;flex:none;stroke:var(--accent)}
+  .score{display:flex;gap:6px;font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+  .score>span{border:1px solid var(--line);border-radius:999px;padding:4px 10px}
 
   .wrap{max-width:1240px;margin:0 auto;padding:8px 16px 24px;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;align-items:start}
   @media (max-width:900px){.wrap{grid-template-columns:1fr}}
@@ -108,6 +123,20 @@
   <div class="topright">
     <div class="mode lang" role="group" aria-label="Language / 語言">
       <button id="lang-en" type="button">EN</button><button id="lang-zh" type="button">中文</button>
+    </div>
+    <div class="record" id="record">
+        <form class="nameform" id="nameForm" novalidate>
+          <input id="nameIn" autocomplete="off" autocapitalize="words" spellcheck="false" aria-describedby="nameErr">
+          <button class="" type="submit" id="nameBtn"></button>
+        </form>
+        <div class="nameask" id="nameAsk" hidden>
+          <span id="nameAskTxt"></span>
+          <button class="on" type="button" id="nameYes"></button>
+          <button class="" type="button" id="nameEdit"></button>
+        </div>
+        <span class="nametag" id="nameTag" hidden><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span id="nameTagTxt"></span></span>
+        <div class="score"><span><span data-t="scoreDone"></span> <b id="sDone">0</b></span><span><span data-t="scorePerfect"></span> <b id="sPerfect">0</b></span></div>
+        <span class="nameerr" id="nameErr" hidden></span>
     </div>
     <div class="mode">
       <button id="tabExplore" class="on" data-t="explore">Explore</button>
@@ -272,6 +301,7 @@
       hereAnswer:()=>'Here is the answer.',
       skipNote:(I,O)=>`${I} can’t be seen, so no ray from ${O} is needed.`
     },
+    scoreDone:'Challenges', scorePerfect:'No mistakes',
     doneBadge:'🎉', donePrompt:'Well done! Challenge complete.', firstTime:'correct first time',
     newCh:'New challenge ▶', tryAgain:'↻ Try this one again', stepOf:(a,b)=>`Step ${a} / ${b}`,
     pen:'Pen', dotted:'Dotted', solid:'Solid', penTip:'Behind the mirror: dotted · In front: solid',
@@ -357,6 +387,7 @@
       hereAnswer:()=>'這是答案。',
       skipNote:(I,O)=>`看不到 ${I}，所以不需要畫由 ${O} 射出的光線。`
     },
+    scoreDone:'已完成', scorePerfect:'全對',
     doneBadge:'🎉', donePrompt:'做得好！挑戰完成。', firstTime:'首次答對',
     newCh:'新挑戰 ▶', tryAgain:'↻ 再試這一題', stepOf:(a,b)=>`第 ${a} / ${b} 步`,
     pen:'筆', dotted:'虛線', solid:'實線', penTip:'鏡後：虛線 · 鏡前：實線',
@@ -405,6 +436,7 @@
   // ---------- state ----------
   const ARROW_L = { h:'O_1', t:'O_2', hi:'I_1', ti:'I_2' };
   const POINT_L = { h:'O', hi:'I' };
+  let scDone=0, scPerfect=0;   // like the name, these last only until the page is reloaded
   const st = {
     type:'arrow', O1:P(5,2), O2:P(3,2), M1:P(6,2), M2:P(6,4),
     obs:[{x:3,y:5,name:'observer'}], labels:{...ARROW_L},
@@ -969,7 +1001,12 @@
       }
       break;
     }
-    if(ch.ti>=ch.tasks.length) ch.done=true;
+    if(ch.ti>=ch.tasks.length){
+      ch.done=true;
+      // count each challenge once: done, and "no mistakes" when every task was right first time
+      if(!ch.counted){ ch.counted=true; scDone++; if(ch.record.every(r=>r==='first'||r==='skip')) scPerfect++;
+        $('sDone').textContent=scDone; $('sPerfect').textContent=scPerfect; }
+    }
     else ch.tool = curTask().kind==='oray' ? 'r' : 'v';
     render();
   }
@@ -1209,6 +1246,53 @@
   });
 
   function exButtons(){ $('exRow').innerHTML = Object.entries(PRESETS).map(([k,p])=>`<button data-ex="${k}" class="${k===st.preset?'on':''}">${tx().exampleN(p.n)}</button>`).join(''); }
+
+/* ---------- student name ----------
+   Same format and flow as Lens Ray Diagram: "3A03 Chan Tai Man", confirm once, then locked beside the scores.
+   Deliberately NOT saved: reloading the page clears the name together with the scores. */
+(function(){
+  const g=id=>document.getElementById(id);
+  const TX={
+    en:{ph:'Class, no. and name: 3A03 Chan Tai Man',btn:'Enter',label:'Your class, class number and name',
+        err:'Use this format: class, 2-digit class number, then your name, e.g. 3A03 Chan Tai Man.',
+        ask:n=>`Is this right? <b>${n}</b> You can’t change it after this.`,yes:'Yes, confirm',edit:'Edit'},
+    zh:{ph:'班別、學號及姓名：3A03 Chan Tai Man',btn:'輸入',label:'你的班別、學號及姓名',
+        err:'請用這個格式：班別、兩位數學號，然後是姓名，例如 3A03 Chan Tai Man。',
+        ask:n=>`確定是 <b>${n}</b> 嗎？確定後不能再更改。`,yes:'確定',edit:'修改'}};
+  const T=()=>TX[(lang)==='zh'?'zh':'en'];
+  let pending=null;
+  const escH=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function parseName(raw){
+    const m=raw.trim().replace(/\s+/g,' ').match(/^([1-6])\s?([A-Za-z])\s?(\d{2})\s+(\S.*)$/);
+    if(!m) return null;
+    const name=m[4].split(' ').map(w=>/^[A-Za-z]/.test(w)?w[0].toUpperCase()+w.slice(1).toLowerCase():w).join(' ');
+    return `${m[1]}${m[2].toUpperCase()}${m[3]} ${name}`;
+  }
+  g('nameForm').addEventListener('submit',e=>{
+    e.preventDefault();e.stopPropagation();
+    const n=parseName(g('nameIn').value);
+    if(!n){g('nameErr').textContent=T().err;g('nameErr').hidden=false;g('nameIn').setAttribute('aria-invalid','true');g('nameIn').focus();return;}
+    g('nameErr').hidden=true;g('nameIn').removeAttribute('aria-invalid');
+    pending=n;g('nameAskTxt').innerHTML=T().ask(escH(n));
+    g('nameForm').hidden=true;g('nameAsk').hidden=false;g('nameYes').focus();
+  });
+  g('nameIn').addEventListener('input',()=>{if(!g('nameErr').hidden){g('nameErr').hidden=true;g('nameIn').removeAttribute('aria-invalid');}});
+  g('nameEdit').addEventListener('click',()=>{pending=null;g('nameAsk').hidden=true;g('nameForm').hidden=false;g('nameIn').focus();});
+  g('nameYes').addEventListener('click',()=>{
+    const n=pending;pending=null;
+    g('nameAsk').hidden=true;g('nameForm').remove();   // gone for good until the page is reloaded
+    g('nameTagTxt').textContent=n;g('nameTag').title=n;g('nameTag').hidden=false;
+  });
+  window.applyNameLang=function(){
+    const t=T();
+    if(g('nameIn')){g('nameIn').placeholder=t.ph;g('nameIn').setAttribute('aria-label',t.label);g('nameBtn').textContent=t.btn;}
+    g('nameYes').textContent=t.yes;g('nameEdit').textContent=t.edit;
+    if(pending)g('nameAskTxt').innerHTML=t.ask(escH(pending));
+    if(!g('nameErr').hidden)g('nameErr').textContent=t.err;
+  };
+  window.applyNameLang();
+})();
+
   function applyLang(){
     const T=tx();
     document.documentElement.lang = lang==='zh' ? 'zh-HK' : 'en';
@@ -1217,6 +1301,7 @@
     document.querySelectorAll('[data-h]').forEach(e=>{ e.innerHTML = T[e.dataset.h]; });
     ['en','zh'].forEach(l=>{ const b=$('lang-'+l); b.classList.toggle('on',lang===l); b.setAttribute('aria-pressed',String(lang===l)); });
     exButtons();
+    if(window.applyNameLang) window.applyNameLang();
   }
   function setLang(l){ lang=l; try{ localStorage.setItem('sim-lang',l); }catch(e){} applyLang(); render(); }
   $('lang-en').onclick=()=>setLang('en');

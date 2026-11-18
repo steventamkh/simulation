@@ -206,6 +206,21 @@ h2{font-size:1.25rem;font-weight:600}
 .seg button:disabled{opacity:.35;cursor:not-allowed}
 .drow .hint{margin:0;font-size:0.875rem;color:var(--bad)}
 .dlegend{display:flex;gap:16px;flex-wrap:wrap;font:700 0.75rem var(--f-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+/* student name + scores, as in Lens Ray Diagram */
+.record{display:flex;flex-wrap:wrap;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:5px 6px;min-width:0;max-width:100%}
+.record .stats>span,.record .score>span{background:var(--bg)}
+.record b{color:var(--ink);font-weight:700}
+.nameform{display:flex;gap:6px;align-items:center;flex-wrap:wrap;min-width:0}
+.nameform input{font:inherit;font-size:.9rem;min-height:40px;width:min(250px,62vw);padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.nameform input[aria-invalid="true"]{border-color:var(--bad)}
+.nameform button,.nameask button{min-height:40px;padding:6px 12px}
+.nameask{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:.88rem;padding-left:4px}
+.nameerr{flex-basis:100%;font-size:.8rem;color:var(--bad);padding:0 4px}
+.nametag{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:.95rem;padding:4px 10px;border-radius:999px;background:var(--info-bg);color:var(--ink);overflow-wrap:anywhere}
+.nametag svg{width:14px;height:14px;flex:none;stroke:var(--accent)}
+.record .btn{font-size:.875rem}
+html.proj .nameform,html.proj .nameask,html.proj .nameerr,html.proj .nametag{display:none!important}
+html.proj .record{background:none;border:0;padding:0}
 /* class set + projector */
 .tools{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;align-items:center}
 .tools .btn{font-size:.875rem;padding:6px 12px}
@@ -254,7 +269,20 @@ html.proj .mgrid,html.proj .graphs{gap:20px}
         <button class="btn" id="bClass" type="button" aria-pressed="false" aria-controls="drawer"></button>
         <button class="btn" id="bProj" type="button" aria-pressed="false"></button>
       </div>
-      <div class="stats" aria-live="polite"><span id="stFirst"></span><span id="stStreak"></span><span id="stBest"></span></div>
+      <div class="record" id="record">
+        <form class="nameform" id="nameForm" novalidate>
+          <input id="nameIn" autocomplete="off" autocapitalize="words" spellcheck="false" aria-describedby="nameErr">
+          <button class="btn" type="submit" id="nameBtn"></button>
+        </form>
+        <div class="nameask" id="nameAsk" hidden>
+          <span id="nameAskTxt"></span>
+          <button class="btn primary" type="button" id="nameYes"></button>
+          <button class="btn" type="button" id="nameEdit"></button>
+        </div>
+        <span class="nametag" id="nameTag" hidden><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span id="nameTagTxt"></span></span>
+        <div class="stats" aria-live="polite"></div>
+        <span class="nameerr" id="nameErr" hidden></span>
+      </div>
     </div>
   </header>
 
@@ -604,6 +632,7 @@ zh:{
 }};
 const T_=()=>L[state.lang];
 Object.assign(L.en,{
+ scDone:'Done',scFirst:'First-try correct',
  classSet:'Class set',projector:'Projector',
  hCreate:'Teacher: create a set',
  pCreate:(m,l)=>`Ten ${m} questions at ${l}. Everyone who enters this code gets the same questions in the same order. Choose the tab and level first.`,
@@ -649,6 +678,7 @@ Object.assign(L.en,{
    return `The object moves in the ${dir} direction and ${verb} uniformly from ${from} to ${to} (a = ${F(g.a)} m s⁻²).`;}
 });
 Object.assign(L.zh,{
+ scDone:'已完成',scFirst:'首次答對',
  classSet:'全班練習',projector:'投影模式',
  hCreate:'老師：建立練習',
  pCreate:(m,l)=>`以「${m}」出十題，程度：${l}。輸入這個代碼的人都會得到相同的題目和次序。請先選好分頁和程度。`,
@@ -855,7 +885,7 @@ let mstats={tries:0,first:0,streak:0,best:0};
 let pstats={tries:0,first:0,streak:0,best:0},dstats={tries:0,first:0,streak:0,best:0};
 try{const b=JSON.parse(localStorage.getItem('mgl-best-play')||'0');if(typeof b==='number')pstats.best=b;}catch(e){}
 try{const b=JSON.parse(localStorage.getItem('mgl-best-desc')||'0');if(typeof b==='number')dstats.best=b;}catch(e){}
-function bump(st,ok,key){st.tries++;if(ok){st.first++;st.streak++;if(st.streak>st.best){st.best=st.streak;try{localStorage.setItem(key,JSON.stringify(st.best));}catch(e){}}}else st.streak=0;}
+function bump(st,ok,key){st.tries++;if(ok){st.first++;st.streak++;if(st.streak>st.best){st.best=st.streak;}}else st.streak=0;}
 const MODES=['desc','match','build','play'],MODE_EL={build:'#buildMode',match:'#matchMode',play:'#playMode',desc:'#descMode'};
 try{const b=JSON.parse(localStorage.getItem('mgl-best-match')||'0');if(typeof b==='number')mstats.best=b;}catch(e){}
 function saveBestM(){try{localStorage.setItem('mgl-best-match',JSON.stringify(mstats.best));}catch(e){}}
@@ -884,7 +914,7 @@ function renderStatic(){
   t.levels.forEach((p,i)=>{const b=document.createElement('button');b.type='button';b.setAttribute('aria-pressed',state.level===i);b.innerHTML=`<span class="n">${p[0]}</span><span class="d">${p[1]}</span>`;b.disabled=!!cs;b.onclick=()=>{state.level=i;renderStatic();modeNew(state.mode);};lv.appendChild(b);});
   const md=$('#modes');md.replaceChildren();
   MODES.forEach((key,i)=>{const b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.setAttribute('aria-selected',state.mode===key);b.textContent=t.modes[i];b.disabled=!!cs&&key!==state.mode;b.onclick=()=>setMode(key);md.appendChild(b);});
-  renderClassText();
+  renderClassText();window.applyNameLang&&window.applyNameLang();
   MODES.forEach(k=>{$(MODE_EL[k]).hidden=state.mode!==k;});
   $('#pPlay').textContent=pstate.playing?t.pause:t.play;
   ['pCheck','pShowMe','pNextTask','pNew'].forEach(k=>{$('#'+(k==='pShowMe'?'pShow':k)).textContent=t[k];});
@@ -902,7 +932,7 @@ function renderStats(){
     box.innerHTML=`<span class="set">${t.setChip(cs.code)}</span><span class="set">${t.setQ(cs.i+1,SET_SIZE)}</span><span>${t.setScore(r.right,r.total,r.unit)}</span><button class="btn" id="bLeave" type="button">${t.leave}</button>`;
     $('#bLeave').onclick=leaveSet;return;}
   const st={build:stats,match:mstats,play:pstats,desc:dstats}[state.mode];
-  box.innerHTML=`<span>${t.first(st.first,st.tries)}</span><span>${t.streak(st.streak)}</span><span>${t.best(st.best)}</span>`;
+  box.innerHTML=`<span>${t.scDone} <b>${st.tries}</b></span><span>${t.scFirst} <b>${st.first}</b></span>`;
 }
 function renderText(){
   const t=T_(),q=state.q;
@@ -1418,6 +1448,53 @@ function checkDesc(){
 function revealDesc(){if(!dstate.counted){dstate.counted=true;csRecord(false);bump(dstats,false,'mgl-best-desc');}dstate.revealed=true;dstate.warn=false;renderStats();renderDescFb();}
 function clearDesc(){dstate.ans=dstate.q.model.segs.map(()=>({dir:null,mot:null}));dstate.results=null;dstate.checked=false;dstate.warn=false;renderDesc();}
 $('#dCheck').onclick=checkDesc;$('#dReveal').onclick=revealDesc;$('#dClear').onclick=clearDesc;$('#dNext').onclick=advance;
+
+
+/* ---------- student name ----------
+   Same format and flow as Lens Ray Diagram: "3A03 Chan Tai Man", confirm once, then locked beside the scores.
+   Deliberately NOT saved: reloading the page clears the name together with the scores. */
+(function(){
+  const g=id=>document.getElementById(id);
+  const TX={
+    en:{ph:'Class, no. and name: 3A03 Chan Tai Man',btn:'Enter',label:'Your class, class number and name',
+        err:'Use this format: class, 2-digit class number, then your name, e.g. 3A03 Chan Tai Man.',
+        ask:n=>`Is this right? <b>${n}</b> You can’t change it after this.`,yes:'Yes, confirm',edit:'Edit'},
+    zh:{ph:'班別、學號及姓名：3A03 Chan Tai Man',btn:'輸入',label:'你的班別、學號及姓名',
+        err:'請用這個格式：班別、兩位數學號，然後是姓名，例如 3A03 Chan Tai Man。',
+        ask:n=>`確定是 <b>${n}</b> 嗎？確定後不能再更改。`,yes:'確定',edit:'修改'}};
+  const T=()=>TX[(state.lang)==='zh'?'zh':'en'];
+  let pending=null;
+  const escH=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function parseName(raw){
+    const m=raw.trim().replace(/\s+/g,' ').match(/^([1-6])\s?([A-Za-z])\s?(\d{2})\s+(\S.*)$/);
+    if(!m) return null;
+    const name=m[4].split(' ').map(w=>/^[A-Za-z]/.test(w)?w[0].toUpperCase()+w.slice(1).toLowerCase():w).join(' ');
+    return `${m[1]}${m[2].toUpperCase()}${m[3]} ${name}`;
+  }
+  g('nameForm').addEventListener('submit',e=>{
+    e.preventDefault();e.stopPropagation();
+    const n=parseName(g('nameIn').value);
+    if(!n){g('nameErr').textContent=T().err;g('nameErr').hidden=false;g('nameIn').setAttribute('aria-invalid','true');g('nameIn').focus();return;}
+    g('nameErr').hidden=true;g('nameIn').removeAttribute('aria-invalid');
+    pending=n;g('nameAskTxt').innerHTML=T().ask(escH(n));
+    g('nameForm').hidden=true;g('nameAsk').hidden=false;g('nameYes').focus();
+  });
+  g('nameIn').addEventListener('input',()=>{if(!g('nameErr').hidden){g('nameErr').hidden=true;g('nameIn').removeAttribute('aria-invalid');}});
+  g('nameEdit').addEventListener('click',()=>{pending=null;g('nameAsk').hidden=true;g('nameForm').hidden=false;g('nameIn').focus();});
+  g('nameYes').addEventListener('click',()=>{
+    const n=pending;pending=null;
+    g('nameAsk').hidden=true;g('nameForm').remove();   // gone for good until the page is reloaded
+    g('nameTagTxt').textContent=n;g('nameTag').title=n;g('nameTag').hidden=false;
+  });
+  window.applyNameLang=function(){
+    const t=T();
+    if(g('nameIn')){g('nameIn').placeholder=t.ph;g('nameIn').setAttribute('aria-label',t.label);g('nameBtn').textContent=t.btn;}
+    g('nameYes').textContent=t.yes;g('nameEdit').textContent=t.edit;
+    if(pending)g('nameAskTxt').innerHTML=t.ask(escH(pending));
+    if(!g('nameErr').hidden)g('nameErr').textContent=t.err;
+  };
+  window.applyNameLang();
+})();
 
 /* ---------- class set ---------- */
 const SET_SIZE=10,MODE_LETTER={desc:'D',match:'M',build:'B',play:'P'},LETTER_MODE={D:'desc',M:'match',B:'build',P:'play'};
