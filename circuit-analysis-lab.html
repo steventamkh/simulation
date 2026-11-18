@@ -45,8 +45,6 @@ h1{font-size:clamp(1.7rem,3.6vw,2.4rem);font-weight:800;letter-spacing:-.01em}
 h2{font-size:1.2rem;font-weight:600}
 a{color:var(--accent)}
 .eyebrow{margin:0 0 4px;font:700 .75rem var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
-.eyebrow a{color:inherit;text-decoration:none}
-.eyebrow a:hover{text-decoration:underline}
 .top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px}
 .tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 button,select,input{font:inherit;color:inherit}
@@ -180,7 +178,7 @@ html.proj .ansin{display:none}
 <div class="wrap">
   <header class="top">
     <div>
-      <p class="eyebrow"><a href="./">HKDSE Physics · Simulation Lab</a></p>
+      <p class="eyebrow"><span>HKDSE Physics · Simulation Lab</span></p>
       <h1>Circuit Analysis Lab</h1>
     </div>
     <div class="tools">
@@ -1121,7 +1119,7 @@ function applyStatic(){
   $('lEn').setAttribute('aria-pressed',String(LANG==='en'));
   $('lZh').setAttribute('aria-pressed',String(LANG==='zh'));
   const set=(sel,e,z)=>{const el=document.querySelector(sel);if(el)el.textContent=L(e,z)};
-  set('.eyebrow a','HKDSE Physics · Simulation Lab','HKDSE 物理 · 模擬實驗室');
+  set('.eyebrow span','HKDSE Physics · Simulation Lab','HKDSE 物理 · 模擬實驗室');
   set('h1','Circuit Analysis Lab','電路分析練習室');
   set('#mPractice','Practice','練習');set('#mExplore','Explore','探索');
   set('#bClass','Class set','全班練習');set('#bProj','Projector','投影模式');
